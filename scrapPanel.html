@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>Chessman-WebScrapingTool</title>
+    <link href="https://fonts.googleapis.com/css?family=Noto+Sans+TC:400,700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', Arial, sans-serif;
+            background: #fff;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 40px 0 0 0;
+        }
+        .logo-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo-section img {
+            width: 160px;
+            margin-bottom: 10px;
+        }
+        .logo-section h1 {
+            display: inline-block;
+            vertical-align: middle;
+            color: #C1272D;
+            font-size: 2.2rem;
+            margin: 0 0 0 20px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+        .title {
+            font-size: 1.7rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .desc {
+            color: #444;
+            font-size: 1rem;
+            margin-bottom: 30px;
+            line-height: 1.7;
+        }
+        .form-section {
+            background: #fff;
+            border-radius: 12px;
+            padding: 30px 40px 40px 40px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        .form-label {
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: block;
+            font-size: 1.1rem;
+        }
+        .websites {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            margin-bottom: 30px;
+        }
+        .website-option {
+            display: flex;
+            align-items: center;
+            border: 1.5px solid #eee;
+            border-radius: 10px;
+            padding: 14px 18px;
+            background: #fafafa;
+            transition: border 0.2s;
+        }
+        .website-option:hover {
+            border: 1.5px solid #C1272D;
+        }
+        .website-img {
+            width: 56px;
+            height: 56px;
+            border-radius: 8px;
+            margin-right: 18px;
+            object-fit: contain;
+            background: #fff;
+        }
+        .website-info {
+            flex: 1;
+        }
+        .website-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+        .website-url {
+            font-size: 0.95rem;
+            color: #888;
+        }
+        .website-checkbox {
+            width: 28px;
+            height: 28px;
+            accent-color: #C1272D;
+        }
+        .dates-row {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 18px;
+        }
+        .date-group {
+            flex: 1;
+        }
+        .date-label {
+            font-weight: 700;
+            margin-bottom: 6px;
+            display: block;
+        }
+        .date-input {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 1rem;
+            border: 1.2px solid #ccc;
+            border-radius: 6px;
+            outline: none;
+            transition: border 0.2s;
+        }
+        .date-input:focus {
+            border: 1.2px solid #C1272D;
+        }
+        .keywords-input {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            border: 1.2px solid #ccc;
+            border-radius: 6px;
+            margin-bottom: 30px;
+            outline: none;
+            transition: border 0.2s;
+        }
+        .keywords-input:focus {
+            border: 1.2px solid #C1272D;
+        }
+        .submit-btn {
+            background: #222;
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 8px;
+            padding: 14px 38px;
+            cursor: pointer;
+            transition: background 0.2s;
+            float: right;
+        }
+        .submit-btn:hover {
+            background: #C1272D;
+        }
+        @media (max-width: 600px) {
+            .container, .form-section {
+                padding: 10px;
+            }
+            .dates-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="font-size:1rem; margin-bottom: 18px;">Chessman-WebScrapingTool</div>
+        <div class="logo-section">
+            <img src="CMO-logo.jpg" alt="Chessman Logo" style = "width: 105%;height: 105%;">
+            <h1></h1>
+        </div>
+        <div class="form-section">
+            <div class="title">爬蟲設定</div>
+            <div class="desc">
+                第一步:選擇需要爬蟲的網址(可多選)<br>
+                第二步:設定需要爬蟲的日期(預設為今日)<br>
+                第三步:輸入關鍵字<br>
+                提交後等待系統工作，完成後會彈出通知並生成excel檔案下載。
+            </div>
+            <form id="scrapForm" action="scrap_submit.py" method="POST">
+                <div class="form-group">
+                    <label class="form-label">選擇網址:<br><span style="font-size:0.95rem;font-weight:400;">Select Website:</span></label>
+                    <div class="websites">
+                        <label class="website-option">
+                            <img class="website-img" src="lihk.jpg" alt="LIHKG">
+                            <div class="website-info">
+                                <div class="website-title">LIHKG討論區</div>
+                                <div class="website-url">https://lihkg.com</div>
+                            </div>
+                            <input class="website-checkbox" type="checkbox" name="websites" value="lihkg">
+                        </label>
+                        <label class="website-option">
+                            <img class="website-img" src="hkdiscuss.jpg" alt="Discuss">
+                            <div class="website-info">
+                                <div class="website-title">香港討論區HK Discuss</div>
+                                <div class="website-url">https://www.discuss.com.hk/</div>
+                            </div>
+                            <input class="website-checkbox" type="checkbox" name="websites" value="discuss">
+                        </label>
+                        <label class="website-option">
+                            <img class="website-img" src="babykindom.jpg" alt="BabyKingdom">
+                            <div class="website-info">
+                                <div class="website-title">親子王國BabyKindom</div>
+                                <div class="website-url">www.baby-kingdom.com</div>
+                            </div>
+                            <input class="website-checkbox" type="checkbox" name="websites" value="babykingdom">
+                        </label>
+                    </div>
+                </div>
+                <div class="dates-row">
+                    <div class="date-group">
+                        <label class="date-label">開始<br><span style="font-size:0.95rem;font-weight:400;">Date</span></label>
+                        <input class="date-input" type="date" name="start_date" required>
+                    </div>
+                    <div class="date-group">
+                        <label class="date-label">直至<br><span style="font-size:0.95rem;font-weight:400;">Date</span></label>
+                        <input class="date-input" type="date" name="end_date" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="keywords">輸入關鍵字: (以逗號分隔)</label>
+                    <input class="keywords-input" type="text" id="keywords" name="keywords" placeholder="好唔好,最抵玩,最好,好差,唔好買..." required>
+                </div>
+                <button class="submit-btn" type="submit">提交</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        // Optional: Show alert on submit (simulate notification)
+        document.getElementById('scrapForm').addEventListener('submit', function(e) {
+            // e.preventDefault(); // Uncomment to prevent actual submission for testing
+            alert('提交成功！系統正在處理，完成後會生成excel檔案。');
+        });
+    </script>
+</body>
+</html>

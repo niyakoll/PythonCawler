@@ -45,4 +45,3 @@ def sample():
     title = titleString(html)
     print(title)
 
-sample()

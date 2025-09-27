@@ -13,6 +13,8 @@
 from bs4 import BeautifulSoup  #網頁分析，獲取所需資料
 import re  #正則表達式，文字比對
 import urllib.request, urllib.error  #透過URL取得網頁資料
+import requests
+from urllib.parse import quote
 import time #延遲
 import pandas as pd #儲存資料至excel檔案
 import logging
@@ -65,6 +67,15 @@ def CommentString(html,element,classOrId,name)->list:
         commentList.append(comment)
     return commentList
 
+def searchKeyword(html,element,classOrId,name)->list:
+    soup = BeautifulSoup(html, "html.parser")
+    searchSet =  soup.find_all(element,attrs={classOrId:name})
+    searchUrlList = []
+    for i in searchSet:
+        url = str(i.select_one('a').get('href'))
+        searchUrlList.append(url)
+    return searchUrlList
+
 def totalPage(html,element,classOrId,name)->str:
     soup = BeautifulSoup(html, "html.parser")
     pageSet = soup.find_all(element,attrs = {classOrId : re.compile(name)})
@@ -83,6 +94,7 @@ def sample_babyKindom(tid):
     haveNextPage = True
     TotalcommentList = []
     postCreateDate = ""
+    totalPageNumber = 1
     try:
         while haveNextPage == True:
             #目標網址，tid為主題編號，page為頁數
@@ -161,7 +173,35 @@ def sample_hkdiscuss(tid):
         print(f"完成主題{title}的爬取")    
     
 
+def search_babyKindom(keywordList:list)->list:
+    keywordList = keywordList
+    resultList = []
+    for keyword in keywordList:
+        keyword = quote(keyword)
+        html = URLtoHTML(f"https://www.baby-kingdom.com/search.php?mod=forum&searchid=1758984377&srchtxt={keyword}&orderby=lastpost&ascdesc=desc&searchsubmit=yes&keyword={keyword}&")
+        #print(html)
+        urlList = searchKeyword(html,"h3","class","xs3") 
+        resultList.extend(urlList)
+    print(f"共找到{len(resultList)}個相關主題")
+    return resultList
 
+def search_by_keyword_babykindom(keywordList:list):
+    resultList = search_babyKindom(keywordList)
+    #print(len(resultList))
+    for i in range(0,2):
+        tid = str(resultList[i])[-8:]
+        sample_babyKindom(tid)
+
+def search_by_keyword(kewordList:list,domain:str):
+    match domain:
+        case "babykingdom":
+            search_by_keyword_babykindom(kewordList)
+        case "hkdiscuss":
+            print("not support yet!")
+
+#example   
+keywordList = ['淘寶','cola']
+search_by_keyword(keywordList,"babykingdom")
 
 
 """
@@ -169,11 +209,11 @@ def sample_hkdiscuss(tid):
 #sample_babyKindom("23749399")
 #sample_hkdiscuss("32043124")
 
-#html = URLtoHTML("https://www.discuss.com.hk/viewthread.php?tid=32043123&extra=&page=1")
-#soup = BeautifulSoup(html, "html.parser")
-#result = html.find("var maxpage =  ")
-#result = html[result+len("var maxpage =  "):result+len("var maxpage =  ")+1]
-#print(result)
+html = URLtoHTML("https://www.discuss.com.hk/viewthread.php?tid=32043123&extra=&page=1")
+soup = BeautifulSoup(html, "html.parser")
+result = html.find("var maxpage =  ")
+result = html[result+len("var maxpage =  "):result+len("var maxpage =  ")+1]
+print(result)
 
 # Client data as a Python dictionary
 test_data = {

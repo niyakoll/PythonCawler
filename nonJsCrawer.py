@@ -1,11 +1,14 @@
-# @Time : 2025/9/24 17:03
+# @Time : 2025/9/27 16:58
 # @Author : LoKaYin
 # @File : nonJsCrawer.py
 # @Desc : Building Module for non javascript dynamic web crawer
 #provide function for URL to HTML, use BeautifulSoup to parse HTML
 #URLtoHTML: input URL, return HTML string
 #titleString: input HTML string, return title string
-#sample: test function
+#DateString: input HTML string, element, classOrId, name, return list of date string
+#CommentString: input HTML string, element, classOrId, name, return list of comment string
+#totalPage: input HTML string, element, classOrId, name, return total page number string    
+#sample: test with different domain
 
 from bs4 import BeautifulSoup  #網頁分析，獲取所需資料
 import re  #正則表達式，文字比對
@@ -13,6 +16,7 @@ import urllib.request, urllib.error  #透過URL取得網頁資料
 import time #延遲
 import pandas as pd #儲存資料至excel檔案
 import logging
+import json
 
 def URLtoHTML(url)->str:
     time.sleep(1)#每次request間隔一秒，防止被server ban
@@ -157,11 +161,75 @@ def sample_hkdiscuss(tid):
         print(f"完成主題{title}的爬取")    
     
 
+
+
+
+"""
+#test area:########################################################
 #sample_babyKindom("23749399")
-sample_hkdiscuss("32043124")
+#sample_hkdiscuss("32043124")
 
 #html = URLtoHTML("https://www.discuss.com.hk/viewthread.php?tid=32043123&extra=&page=1")
 #soup = BeautifulSoup(html, "html.parser")
 #result = html.find("var maxpage =  ")
 #result = html[result+len("var maxpage =  "):result+len("var maxpage =  ")+1]
 #print(result)
+
+# Client data as a Python dictionary
+test_data = {
+    "Domain": [
+        {
+            "url": "https://www.baby-kingdom.com/forum.php?mod=viewthread&tid={tid}&extra=page%3D1&page={page}",
+            "tid": "我唔想入錶",
+            "date": "24-09-2025",
+            "topic": {
+                "url": "https://www.baby-kingdom.com/forum.php?mod=viewthread&tid={tid}&extra=page%3D1&page={page}",
+                "tid": "23749399",
+                "date": "2025-09-24",
+                "totalPage": "5",
+                "commentList": {
+                    "comment": "入錶好貴!",
+                    "page": "1",
+                    "keywords": ["入錶","高齡","淘寶"]
+                    
+                }
+            },
+            "active": True
+        },
+        {
+            "id": "CL002",
+            "name": "Bob Johnson",
+            "email": "bob.johnson@example.com",
+            "phone": "987-654-3210",
+            "address": {
+                "street": "456 Oak Ave",
+                "city": "Otherville",
+                "state": "NY",
+                "zip_code": "10001"
+            },
+            "active": False
+        }
+    ]
+}
+
+# Define the filename for the JSON file
+json_filename = "client_information.json"
+
+# Write the client data to the JSON file
+try:
+    with open(json_filename, 'w',encoding='utf-8') as f:
+        json.dump(test_data, f, indent=4,ensure_ascii=False)
+    print(f"JSON file '{json_filename}' created successfully.")
+except IOError as e:
+    print(f"Error writing to file: {e}")
+
+# Optional: Read the JSON file back to verify
+try:
+    with open(json_filename, 'r',encoding='utf-8') as f:
+        loaded_data = json.load(f)
+    print("\nContent of the created JSON file:")
+    print(json.dumps(loaded_data, indent=4,ensure_ascii=False))
+except IOError as e:
+    print(f"Error reading from file: {e}")
+#test area end########################################################
+"""

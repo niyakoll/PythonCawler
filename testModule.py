@@ -6,8 +6,12 @@
 
 import nonJsCrawer
 
-#nonJsCrawer.sample()
-
-#test on.cc title
-onCCTitle = nonJsCrawer.titleString(nonJsCrawer.URLtoHTML('https://hk.on.cc/hk/bkn/cnt/news/20250924/bkn-20250924132004287-0924_00822_001.html'))
-print(onCCTitle)
+tid = 23814257
+for i in range(0,5):
+    try:
+        nonJsCrawer.sample_babyKindom(str(tid))
+    except:
+        print(f"主題代號{tid}爬取失敗")
+        continue
+    finally:
+        tid+=1

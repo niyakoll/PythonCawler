@@ -146,6 +146,14 @@ def test(url: str,json_number:int):
     except IOError as e:
         print(f"Error creating JSON file at {file_path}: {e}")
 
+def writeJson(filePath:str,data:dict):
+    try:
+        with open(filePath, 'w',encoding="utf-8") as f:
+            json.dump(data, f, indent=4,ensure_ascii=False)  # indent for pretty-printing
+        print(f"JSON file successfully created at: {filePath}")
+    except IOError as e:
+        print(f"Error creating JSON file at {filePath}: {e}")
+
 file_path = "C:/Users/Alex/threadOutput2.json"
 with open(file_path, 'r',encoding="utf-8") as f:
     data = json.load(f)
@@ -162,11 +170,12 @@ with open(file_path, 'r',encoding="utf-8") as f:
             #print(code)
             url =f"https://www.threads.com/@{username}/post/{code}"
             print(url)
-            test(url,3)
+            #test(url,3)
             break
 
 
 
-
-
+test_search = scrape_thread("https://www.threads.com/search?q=%E5%BC%B5%E5%A4%A9%E8%B3%A6&serp_type=default")
+#print(test_search)
+writeJson(r"C:/Users/Alex/threadSearchOutput.json",test_search)
 

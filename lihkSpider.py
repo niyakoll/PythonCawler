@@ -72,7 +72,7 @@ def onePageCommentPerPost(html,className):
         print(f"共找到{commentCount}條留言")
         return onePageCommentList
 def allPageCommentPerPost(url:str,className):
-    allPageCommentList = []
+    allPageCommentList = {}
     page = 1
     #first page, find total page number
     html = URLtoHTML(url)
@@ -85,7 +85,7 @@ def allPageCommentPerPost(url:str,className):
         totalPage = 1
     onePageCommentList = onePageCommentPerPost(html,className)
     print(f"正在抓取第{page}頁留言...")
-    allPageCommentList.append(onePageCommentList)
+    allPageCommentList.append({page:onePageCommentList})
     if totalPage == 1:
         return allPageCommentList
     else:
@@ -97,7 +97,7 @@ def allPageCommentPerPost(url:str,className):
             print(f"正在抓取第{page}頁留言...")
             html = URLtoHTML(url)
             onePageCommentList = onePageCommentPerPost(html,className)
-            allPageCommentList.append(onePageCommentList)
+            allPageCommentList.append({page:onePageCommentList})
             page += 1
             print(onePageCommentList)
 
@@ -125,10 +125,10 @@ def keywordToUrlList(keyword,className):
     finally:
         return urlList
 def oneKeywordAllComment(keyword):
-    allCommentListPerKeyword = []
+    allCommentListPerKeyword = {}
     urlList = keywordToUrlList(keyword,'_2A_7bGY9QAXcGu1neEYDJB')
     print(f"共找到{len(urlList)}個相關討論串")
-    for url in urlList[0:1]:
+    for url in urlList[0:0]:
         html = URLtoHTML(url)
         title = titleString(html)
         print(f"正在抓取討論串標題：{title}")
@@ -140,7 +140,7 @@ def oneKeywordAllComment(keyword):
 def writeJson(filePath:str,data:list):
     try:
         with open(filePath, 'w',encoding="utf-8") as f:
-            json.dumps(data, indent=4,ensure_ascii=False)  # indent for pretty-printing
+            json.dump(data,f, indent=4,ensure_ascii=False)  # indent for pretty-printing
         print(f"JSON file successfully created at: {filePath}")
     except IOError as e:
         print(f"Error creating JSON file at {filePath}: {e}")

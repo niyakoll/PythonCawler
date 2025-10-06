@@ -12,8 +12,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 import time
 
+
+
 #url = 'https://www.threads.com/@faustinemakmak/post/C8oCIStyLen'
-url = 'https://lihkg.com/thread/3995127/page/1'
+url = 'https://lihkg.com/thread/3991187/page/1'
 #url = 'https://www.discuss.com.hk/viewthread.php?tid=31970736&utm_source=festival_home&utm_medium=home&utm_campaign=711'
 options = Options()
 options.add_argument('--ignore-certificate-errors')
@@ -45,20 +47,19 @@ print("\nsuccess!3")
 html = driver.page_source
 soup = BeautifulSoup(html, 'html.parser')
 title = soup.find('title').text
-
+print(title)
 try:
     
-    for i in range(1,20):   
-      #commentSet = soup.find_all('div', attrs={'data-ast-root':'true'})
-      commentSet = soup.find_all('div', attrs={'id':i})
-
-      for commentTag in commentSet:
+    commentSet = soup.find_all('div', attrs={'class':'_2cNsJna0_hV8tdMj3X6_gJ'})
+    for commentTag in commentSet:
         comment = commentTag.get_text()
         print(comment)
-        print(len(commentSet))
+        
+        
 except:
   print("Error!")
-
-print(title)
+finally:
+    commentCount = len(commentSet)
+    print(f"共找到{commentCount}條留言")
 
 driver.quit()

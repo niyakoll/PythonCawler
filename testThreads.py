@@ -62,6 +62,7 @@ def parse_thread(data: Dict) -> Dict:
 
 def scrape_thread(url: str,thread_keyword) -> dict:
     """Scrape Threads post and replies from a given URL"""
+    
     with sync_playwright() as pw:
         # start Playwright browser
         browser = pw.chromium.launch(headless=True)
@@ -141,78 +142,102 @@ def writeJson(filePath:str,data:dict):
         print(f"JSON file successfully created at: {filePath}")
     except IOError as e:
         print(f"Error creating JSON file at {filePath}: {e}")
+    finally:
+        return tempStorge
 
 def add_hidden_comment(url: str,thread_keyword):
-    reply = scrape_thread(url,thread_keyword)
-    del reply["thread"]
-    del reply["replies"][0]
-    tempStorge.append(reply)
+    try:
+        reply = scrape_thread(url,thread_keyword)
+        del reply["thread"]
+        del reply["replies"][0]
+        tempStorge.append(reply)
+    except ValueError as e:
+        print(f"Error in add_hidden_comment function: {e}")
+    finally:
+        return tempStorge
 def find_hidden_comment(post:Dict,thread_keyword):
-    for reply in post["replies"]:
-        direct_reply_count = reply["direct_reply_count"]
-        if direct_reply_count and direct_reply_count > 0:
-            username = reply["username"]
-            code = reply["code"]
-            text = reply["text"]
-            print(f"this comment {text} has {direct_reply_count} replies")
+    try:
+        for reply in post["replies"]:
+            direct_reply_count = reply["direct_reply_count"]
+            if direct_reply_count and direct_reply_count > 0:
+                username = reply["username"]
+                code = reply["code"]
+                text = reply["text"]
+                print(f"this comment {text} has {direct_reply_count} replies")
             #print(username)
             #print(code)
-            url =f"https://www.threads.com/@{username}/post/{code}"
-            print(url)
-            add_hidden_comment(url,thread_keyword)
+                url =f"https://www.threads.com/@{username}/post/{code}"
+                print(url)
+                add_hidden_comment(url,thread_keyword)
+    except ValueError as e:
+        print(f"Error in find_hidden_comment function: {e}")
+    finally:
+        return tempStorge
             
 def search_one_keyword(keword:str)->list:
     url_list = []
-    search_url = f"https://www.threads.com/search?q={keword}&serp_type=recent"
-    search_result = scrape_thread(search_url,keword)
-    firstPost = search_result["thread"]
-    firstPostUserName = firstPost["username"]
-    firstPostCode = firstPost["code"]
-    firstPostUrl = f"https://www.threads.com/@{firstPostUserName}/post/{firstPostCode}"
-    url_list.append(firstPostUrl)
-    for post in search_result["replies"]:
-        postUserName = post["username"]
-        postCode = post["code"]
-        postUrl = f"https://www.threads.com/@{postUserName}/post/{postCode}"
-        url_list.append(postUrl)
-    return url_list
+    try:
+        search_url = f"https://www.threads.com/search?q={keword}&serp_type=recent"
+        search_result = scrape_thread(search_url,keword)
+        firstPost = search_result["thread"]
+        firstPostUserName = firstPost["username"]
+        firstPostCode = firstPost["code"]
+        firstPostUrl = f"https://www.threads.com/@{firstPostUserName}/post/{firstPostCode}"
+        url_list.append(firstPostUrl)
+        for post in search_result["replies"]:
+            postUserName = post["username"]
+            postCode = post["code"]
+            postUrl = f"https://www.threads.com/@{postUserName}/post/{postCode}"
+            url_list.append(postUrl)
+    except ValueError as e:
+        print(f"Error scraping keyword {keword}: {e}")
+    finally:
+        return url_list
 
 def search_one_keyword_all_comment(url_list:list,thread_keyword)->dict:
     i = 1
-    if url_list != []:
-        for postUrl in url_list:
-            try:
-                output = scrape_thread(postUrl,thread_keyword)
-                tempStorge.append(output)
-                print(f"Post{i} start Listening... ")
-                i+=1
-            except ValueError as e:
-                print(f"Error scraping post {postUrl}: {e}")
-                continue
-            try:
-                find_hidden_comment(output,thread_keyword)
-            except ValueError as e:
-                print(f"Error scraping hidden comments for post {postUrl}: {e}")
-                continue
-    return tempStorge
+    try:
+        if url_list != []:
+            for postUrl in url_list:
+                try:
+                    output = scrape_thread(postUrl,thread_keyword)
+                    tempStorge.append(output)
+                    print(f"Post{i} start Listening... ")
+                    i+=1
+                except ValueError as e:
+                    print(f"Error scraping post {postUrl}: {e}")
+                    continue
+                try:
+                    find_hidden_comment(output,thread_keyword)
+                except ValueError as e:
+                    print(f"Error scraping hidden comments for post {postUrl}: {e}")
+                    continue
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+    finally:
+
+        return tempStorge
 
 def search_multiple_keyword(keyword_list:list,file_path)->dict:
-    
-    for keyword in keyword_list:
-        time.sleep(2)
-        try:
-            url_list = search_one_keyword(keyword)
-            print(f"Keyword {keyword} Listening...")
-        except ValueError as e:
-            print(f"Error scraping keyword {keyword}: {e}")
-            continue
-        try:
-            search_one_keyword_all_comment(url_list,keyword)
-        except ValueError as e:
-            print(f"Error scraping all comments for keyword {keyword}: {e}")
-            continue
-    writeJson(file_path,tempStorge)
-    return tempStorge
+    try:
+        for keyword in keyword_list:
+            time.sleep(2)
+            try:
+                url_list = search_one_keyword(keyword)
+                print(f"Keyword {keyword} Listening...")
+            except ValueError as e:
+                print(f"Error scraping keyword {keyword}: {e}")
+                continue
+            try:
+                search_one_keyword_all_comment(url_list,keyword)
+            except ValueError as e:
+                print(f"Error scraping all comments for keyword {keyword}: {e}")
+                continue
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+    finally:
+        writeJson(file_path,tempStorge)
+        return tempStorge
 
 
 

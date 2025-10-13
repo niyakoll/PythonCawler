@@ -50,7 +50,7 @@ def formatText(resultFileName)->str:
             postUrl = post["thread"]["url"]
             postLikeCount = post["thread"]["like_count"]
             postReplyCount = post["thread"]["direct_reply_count"]
-            outputText += f"Post Title: {postTitle}\nPublish on: {postTime}\nPost Link: {postUrl}\nPost Like Count: {postLikeCount}\nPost Reply Count: {postReplyCount}\n"
+            outputText += f"帖文標題: {postTitle}\n發佈時間: {postTime}\n帖文連結: {postUrl}\n帖文讚好數: {postLikeCount}\n帖文留言數: {postReplyCount}\n"
             #print(f"Post Title: {postTitle}\n")
             #print(f"Publish on: {postTime}\n")
             #print(f"Post Link: {postUrl}\n")
@@ -64,7 +64,7 @@ def formatText(resultFileName)->str:
                 commentTime = timestampConvert(commentTimeStamp)
                 commentLikeCount = comment["like_count"]
                 commentReplyCount = comment["direct_reply_count"]
-                outputText += f"Comment Text: {commentText}(Publish on {commentTime})\nComment Like Count: {commentLikeCount}\nComment Reply Count: {commentReplyCount}\n"
+                outputText += f"留言: {commentText}(發佈時間: {commentTime})\n留言讚好數: {commentLikeCount}\n留言回覆數: {commentReplyCount}\n"
                 #print(f"Comment Text: {commentText}(Publish on {commentTime})\n")
                 #print(f"Comment Like Count: {commentLikeCount}\n")
                 #print(f"Comment Reply Count: {commentReplyCount}\n")

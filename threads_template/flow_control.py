@@ -30,23 +30,35 @@ with open('C:/Users/Alex/ListeningTool/github/threads_template/manifest.json', '
     ai_model = manifest["ai_model"]
     proxies = manifest["proxies"]
 
-currentTime = getCurrentTime.getCurrentTime()
 
 
-if __name__ == "__main__":
-    #schedule.every(30).minutes.do(scan())
-    #schedule.every(1).seconds.do(test_schedule)
-    #t0 = threading.Thread(target = threads_main.scan())
-    #t0.start()
-    #t0.join()
+def startRunning():
+    threads_main.scan()
     result = result_text_cleaning.formatText("stressTest1.json")
     result += result_text_cleaning.formatText("stressTest2.json")
     aiText = ai_agent.callAI(result)
     sendWhatsapp.sendMessage(aiText,target_whatsapp_group[0])
-    print("\n\n\nFinish!")
+    now = result_text_cleaning.timestampConvert(time.time())
+    print(f"{now} : Whole Process Finished.")
 
-    #while True:
-    # Checks whether a scheduled task 
-    # is pending to run or not
-        #schedule.run_pending()
-        #time.sleep(1)
+def test_schedule():
+    currentTime = getCurrentTime.getCurrentTime()
+    print(f"{currentTime['hour']}:{currentTime['minute']}:{currentTime['second']} running!")
+
+if __name__ == "__main__":
+    
+    
+    try:
+        startRunning()
+        schedule.every(interval).minutes.do(startRunning)
+
+            
+    except:
+        print("crash!")
+
+    while True:
+    #Checks whether a scheduled task 
+    #is pending to run or not
+        schedule.run_pending()
+        time.sleep(1)
+        

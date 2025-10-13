@@ -10,7 +10,7 @@ def getCurrentTime()->dict:
 
     # Format date and time
     formatted_time = hk_time.strftime("%Y-%m-%d %H:%M:%S %Z")
-    print(formatted_time)  # Output: 2025-10-09 08:53:00 HKT
+    #print(formatted_time)  # Output: 2025-10-09 08:53:00 HKT
 
     # Extract components
     year = hk_time.year

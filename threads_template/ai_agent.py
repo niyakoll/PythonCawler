@@ -27,21 +27,28 @@ with open('C:/Users/Alex/ListeningTool/github/threads_template/manifest.json', '
 ai_input = ""
 def callAI(resultText)->str:
     ai_input = prompt+"\n"+resultText
+    ai_reply = "請聯絡我們:12345678!"
+    try:
+        ai_reply = ai_model_shift(ai_input,0)
+    except:
+        ai_reply = ai_model_shift(ai_input,1)
+    return ai_reply
+
+def ai_model_shift(inputText,number):
     client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=ai_agent_api_key[0],
     )
-
     completion = client.chat.completions.create(
     extra_headers={
         "HTTP-Referer": "<YOUR_SITE_URL>", # Optional. Site URL for rankings on openrouter.ai.
         "X-Title": "<YOUR_SITE_NAME>", # Optional. Site title for rankings on openrouter.ai.
     },
-    model=ai_model[1],
+    model=ai_model[number],
     messages=[
         {
         "role": "user",
-        "content": ai_input
+        "content": inputText
         }
     ]
 

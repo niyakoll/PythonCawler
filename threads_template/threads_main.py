@@ -7,12 +7,15 @@ from playwright.sync_api import sync_playwright
 import threading
 import time
 import schedule
-
+import result_text_cleaning
+from datetime import datetime
+import getCurrentTime
 
 
 #Get setting from manifest json file
 client = ""
 keyword_list = []
+day_range = 30
 interval = 30
 target_path = ""
 light_scan_mode = False
@@ -25,6 +28,7 @@ with open('C:/Users/Alex/ListeningTool/github/threads_template/manifest.json', '
     manifest = json.load(file)
     client = manifest["client"]
     keyword_list = manifest["keyword_list"]
+    day_range = manifest['day_range']
     interval = manifest["interval"]
     target_path = manifest["target_path"]
     light_scan_mode = manifest["light_scan_mode"]
@@ -149,7 +153,7 @@ def scrape_thread(url: str,thread_keyword) -> dict:
             if thread_keyword not in str(thread_items):
                 continue
             testHiddenSet3.append(hidden_dataset)
-            print(f"After json loads and nested lookup thread_items, there are total :{len(testHiddenSet3)} hidden sets.")
+            #print(f"After json loads and nested lookup thread_items, there are total :{len(testHiddenSet3)} hidden sets.")
 
             # use our jmespath parser to reduce the dataset to the most important fields
             threads = [parse_thread(t) for thread in thread_items for t in thread]
@@ -199,7 +203,7 @@ def find_hidden_comment(post:Dict,thread_keyword,tempStorge):
                 username = reply["username"]
                 code = reply["code"]
                 text = reply["text"]
-                print(f"this comment {text} has {direct_reply_count} replies")
+                #print(f"this comment {text} has {direct_reply_count} replies")
             #print(username)
             #print(code)
                 url =f"https://www.threads.com/@{username}/post/{code}"
@@ -219,12 +223,49 @@ def search_one_keyword(keword:str)->list:
         firstPostUserName = firstPost["username"]
         firstPostCode = firstPost["code"]
         firstPostUrl = f"https://www.threads.com/@{firstPostUserName}/post/{firstPostCode}"
-        url_list.append(firstPostUrl)
+        
+        #exclude some old posts
+        postTimeStamp = firstPost["published_on"]
+        postTime = result_text_cleaning.timestampConvert(postTimeStamp)
+        now = result_text_cleaning.timestampConvert(time.time())
+        postyear = int(postTime[:4])
+        postMonth = int(postTime[5:7])
+        postDay = int(postTime[8:10])
+        nowYear = int(now[:4])
+        nowMonth = int(now[5:7])
+        nowDay = int(now[8:10])
+        publishDay = datetime(postyear, postMonth, postDay)
+        today = datetime(nowYear, nowMonth, nowDay)
+        dayDifferent = (today-publishDay).days
+        if dayDifferent > day_range:
+            print(f"{firstPostUrl}\nThis Post was published over {day_range} days!")
+            
+        else:
+            url_list.append(firstPostUrl)
+
         for post in search_result["replies"]:
             postUserName = post["username"]
             postCode = post["code"]
             postUrl = f"https://www.threads.com/@{postUserName}/post/{postCode}"
-            url_list.append(postUrl)
+            #exclude some old post
+            postTimeStamp = post["published_on"]
+            postTime = result_text_cleaning.timestampConvert(postTimeStamp)
+            now = result_text_cleaning.timestampConvert(time.time())
+            postyear = int(postTime[:4])
+            postMonth = int(postTime[5:7])
+            postDay = int(postTime[8:10])
+            nowYear = int(now[:4])
+            nowMonth = int(now[5:7])
+            nowDay = int(now[8:10])
+            publishDay = datetime(postyear, postMonth, postDay)
+            today = datetime(nowYear, nowMonth, nowDay)
+            dayDifferent = (today-publishDay).days
+            if dayDifferent > day_range:
+                print(f"{postUrl}\nThis Post was published over {day_range} days!")
+            else:
+                url_list.append(postUrl)
+
+            
     except ValueError as e:
         print(f"Error scraping keyword {keword}: {e}")
     finally:
@@ -234,11 +275,13 @@ def search_one_keyword_all_comment(url_list:list,thread_keyword,tempStorge)->dic
     i = 1
     try:
         if url_list != []:
+            print(f"Keyword {thread_keyword} found {len(url_list)} Posts in recent {day_range} days.")
             for postUrl in url_list:
                 try:
+                    print(f"Post{i} start Listening... ")
                     output = scrape_thread(postUrl,thread_keyword)
                     tempStorge.append(output)
-                    print(f"Post{i} start Listening... ")
+                    
                     i+=1
                 except ValueError as e:
                     print(f"Error scraping post {postUrl}: {e}")
@@ -260,14 +303,14 @@ def search_multiple_keyword(keyword_list:list,file_path,tempStorge)->dict:
         for keyword in keyword_list:
             time.sleep(2)
             try:
+                print(f"Keyword {keyword} Start Listening...")
                 url_list = search_one_keyword(keyword)
-                print(f"Keyword {keyword} Listening...")
             except ValueError as e:
                 print(f"Error scraping keyword {keyword}: {e}")
                 continue
             try:
                 if light_scan_mode == True:
-                    url_list = url_list[:5]
+                    url_list = url_list[:10]
                 search_one_keyword_all_comment(url_list,keyword,tempStorge)
             except ValueError as e:
                 print(f"Error scraping all comments for keyword {keyword}: {e}")
@@ -276,7 +319,7 @@ def search_multiple_keyword(keyword_list:list,file_path,tempStorge)->dict:
         print(f"An unexpected error occurred: {e}")
     finally:
         writeJson(file_path,tempStorge,tempStorge)
-        print(f"All keywords Listening finished, total {len(tempStorge)} comments collected.")
+        print(f"All keywords Listening finished, total {len(tempStorge)} Post collected.")
         end = time.time()
         print(f"Total time taken: {int((end - start)/60)} minutes")
         return tempStorge
@@ -287,21 +330,21 @@ def scan():
     t2 = threading.Thread(target=search_multiple_keyword, args=(keyword_list[4:],target_path+"stressTest2.json",tempStorge2))
     t1.start()
     t2.start()
-    print("All threads started.")
+    currentTime = result_text_cleaning.timestampConvert(time.time())
+    print(f"{currentTime} : Scanning Started.")
     t1.join()
     t2.join()
-    print("Scanning Finished!")
+    currentTime = result_text_cleaning.timestampConvert(time.time())
+    print(f"{currentTime} : Scanning Finished.")
     
 def test_schedule():
     print("running!")
 
 
 
-
 #test_search = scrape_thread("https://www.threads.com/search?q=%E5%BC%B5%E5%A4%A9%E8%B3%A6&serp_type=recent")
 #print(test_search)
 #writeJson(r"C:/Users/Alex/threadSearchOutput.json",test_search)
-
 
 """
     numberOfScan = 0

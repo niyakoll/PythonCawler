@@ -1,0 +1,51 @@
+import json
+from openai import OpenAI
+#Get setting from manifest json file
+client = ""
+keyword_list = []
+interval = 30
+target_path = ""
+light_scan_mode = False
+target_whatsapp_group = ""
+ai_agent_api_key = ""
+ai_model = []
+proxies = []
+
+with open('C:/Users/Alex/ListeningTool/github/threads_template/manifest.json', 'r',encoding="utf-8") as file:
+    manifest = json.load(file)
+    MarketingClient = manifest["client"]
+    keyword_list = manifest["keyword_list"]
+    interval = manifest["interval"]
+    target_path = manifest["target_path"]
+    light_scan_mode = manifest["light_scan_mode"]
+    target_whatsapp_group = manifest["target_whatsapp_group"]
+    ai_agent_api_key = manifest["ai_agent_api_key"]
+    ai_model = manifest["ai_model"]
+    proxies = manifest["proxies"]
+    prompt = manifest["ai_prompt"]
+#def openrouter(api_key,input_text,model):
+ai_input = ""
+def callAI(resultText)->str:
+    ai_input = prompt+"\n"+resultText
+    client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=ai_agent_api_key[0],
+    )
+
+    completion = client.chat.completions.create(
+    extra_headers={
+        "HTTP-Referer": "<YOUR_SITE_URL>", # Optional. Site URL for rankings on openrouter.ai.
+        "X-Title": "<YOUR_SITE_NAME>", # Optional. Site title for rankings on openrouter.ai.
+    },
+    model=ai_model[1],
+    messages=[
+        {
+        "role": "user",
+        "content": ai_input
+        }
+    ]
+
+    )
+    ai_reply = str(completion.choices[0].message.content)
+    #print(completion.choices[0].message.content)
+    return ai_reply

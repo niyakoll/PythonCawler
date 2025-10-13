@@ -7,9 +7,32 @@ from playwright.sync_api import sync_playwright
 import threading
 import time
 import schedule
-import testn8n
 
-#from urllib.parse import quote
+
+
+#Get setting from manifest json file
+client = ""
+keyword_list = []
+interval = 30
+target_path = ""
+light_scan_mode = False
+target_whatsapp_group = ""
+ai_agent_api_key = ""
+ai_model = []
+proxies = []
+
+with open('C:/Users/Alex/ListeningTool/github/threads_template/manifest.json', 'r',encoding="utf-8") as file:
+    manifest = json.load(file)
+    client = manifest["client"]
+    keyword_list = manifest["keyword_list"]
+    interval = manifest["interval"]
+    target_path = manifest["target_path"]
+    light_scan_mode = manifest["light_scan_mode"]
+    target_whatsapp_group = manifest["target_whatsapp_group"]
+    ai_agent_api_key = manifest["ai_agent_api_key"]
+    ai_model = manifest["ai_model"]
+    proxies = manifest["proxies"]
+
 
 # specify the request headers
 extra_headers = {
@@ -160,9 +183,10 @@ def writeJson(filePath:str,data:dict,tempStorge):
 def add_hidden_comment(url: str,thread_keyword,tempStorge):
     try:
         reply = scrape_thread(url,thread_keyword)
+        title =  reply["thread"]["text"]
         del reply["thread"]
         del reply["replies"][0]
-        tempStorge.append(reply)
+        tempStorge[title].append(reply)
     except ValueError as e:
         print(f"Error in add_hidden_comment function: {e}")
     finally:
@@ -242,6 +266,8 @@ def search_multiple_keyword(keyword_list:list,file_path,tempStorge)->dict:
                 print(f"Error scraping keyword {keyword}: {e}")
                 continue
             try:
+                if light_scan_mode == True:
+                    url_list = url_list[:5]
                 search_one_keyword_all_comment(url_list,keyword,tempStorge)
             except ValueError as e:
                 print(f"Error scraping all comments for keyword {keyword}: {e}")
@@ -252,35 +278,32 @@ def search_multiple_keyword(keyword_list:list,file_path,tempStorge)->dict:
         writeJson(file_path,tempStorge,tempStorge)
         print(f"All keywords Listening finished, total {len(tempStorge)} comments collected.")
         end = time.time()
-        print(f"Total time taken: {end - start} seconds")
+        print(f"Total time taken: {int((end - start)/60)} minutes")
         return tempStorge
 
 
 def scan():
-    keyword_list1 = ['容祖兒','張敬軒','古巨基','謝霆鋒']
-    keyword_list2 = ['曾傲棐','許靖韻','VIVA','李幸倪','楊千嬅']
-    t1 = threading.Thread(target=search_multiple_keyword, args=(keyword_list1,"C:/Users/Alex/stressTest3.json",tempStorge1))
-    t2 = threading.Thread(target=search_multiple_keyword, args=(keyword_list2,"C:/Users/Alex/stressTest4.json",tempStorge2))
+    t1 = threading.Thread(target=search_multiple_keyword, args=(keyword_list[:4],target_path+"stressTest1.json",tempStorge1))
+    t2 = threading.Thread(target=search_multiple_keyword, args=(keyword_list[4:],target_path+"stressTest2.json",tempStorge2))
     t1.start()
     t2.start()
     print("All threads started.")
     t1.join()
     t2.join()
     print("Scanning Finished!")
-    testn8n.SendToN8n()
+    
+def test_schedule():
+    print("running!")
 
 
 
-file_path = "C:/Users/Alex/threadOutput5.json"
 
 #test_search = scrape_thread("https://www.threads.com/search?q=%E5%BC%B5%E5%A4%A9%E8%B3%A6&serp_type=recent")
 #print(test_search)
 #writeJson(r"C:/Users/Alex/threadSearchOutput.json",test_search)
-if __name__ == "__main__":
-    #output = scrape_thread("https://www.threads.com/@cantalkpop/post/DPIcpLNAT-_")
-    #tempStorge.append(output)
-    #find_hidden_comment(output)
-    #writeJson(file_path,tempStorge)
+
+
+"""
     numberOfScan = 0
     try:
         while numberOfScan < 30:
@@ -288,5 +311,5 @@ if __name__ == "__main__":
             numberOfScan+=1
     except:
         print("crash!")
-
+    """
         

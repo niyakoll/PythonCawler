@@ -6,6 +6,9 @@ from nested_lookup import nested_lookup
 from playwright.sync_api import sync_playwright
 import threading
 import time
+import schedule
+import testn8n
+
 #from urllib.parse import quote
 
 # specify the request headers
@@ -253,6 +256,18 @@ def search_multiple_keyword(keyword_list:list,file_path,tempStorge)->dict:
         return tempStorge
 
 
+def scan():
+    keyword_list1 = ['容祖兒','張敬軒','古巨基','謝霆鋒']
+    keyword_list2 = ['曾傲棐','許靖韻','VIVA','李幸倪','楊千嬅']
+    t1 = threading.Thread(target=search_multiple_keyword, args=(keyword_list1,"C:/Users/Alex/stressTest3.json",tempStorge1))
+    t2 = threading.Thread(target=search_multiple_keyword, args=(keyword_list2,"C:/Users/Alex/stressTest4.json",tempStorge2))
+    t1.start()
+    t2.start()
+    print("All threads started.")
+    t1.join()
+    t2.join()
+    print("Scanning Finished!")
+    testn8n.SendToN8n()
 
 
 
@@ -266,12 +281,12 @@ if __name__ == "__main__":
     #tempStorge.append(output)
     #find_hidden_comment(output)
     #writeJson(file_path,tempStorge)
-    keyword_list1 = ["長實"]
-    keyword_list2 = ["麥當奴"]
-    t1 = threading.Thread(target=search_multiple_keyword, args=(keyword_list1,"C:/Users/Alex/stressTest3.json",tempStorge1))
-    t2 = threading.Thread(target=search_multiple_keyword, args=(keyword_list2,"C:/Users/Alex/stressTest4.json",tempStorge2))
-    t1.start()
-    t2.start()
-    print("All threads started.")
+    numberOfScan = 0
+    try:
+        while numberOfScan < 30:
+            schedule.every(30).minutes.do(scan())
+            numberOfScan+=1
+    except:
+        print("crash!")
 
-    
+        

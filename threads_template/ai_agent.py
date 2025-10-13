@@ -31,8 +31,16 @@ def callAI(resultText)->str:
     try:
         ai_reply = ai_model_shift(ai_input,0)
     except:
-        ai_reply = ai_model_shift(ai_input,1)
-    return ai_reply
+        try:
+            ai_reply = ai_model_shift(ai_input,1)
+        except:
+            try:
+                ai_reply = ai_model_shift(ai_input,2)
+            except Exception as e:
+                print(f"An unexpected error occurred: {e}")
+    finally:
+        return ai_reply
+    
 
 def ai_model_shift(inputText,number):
     client = OpenAI(

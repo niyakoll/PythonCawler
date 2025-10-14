@@ -10,12 +10,14 @@ import schedule
 import result_text_cleaning
 from datetime import datetime
 import getCurrentTime
-
+import math
+import os
+import filter 
 
 #Get setting from manifest json file
 client = ""
 keyword_list = []
-day_range = 30
+hour_range = 2
 interval = 30
 target_path = ""
 light_scan_mode = False
@@ -23,12 +25,12 @@ target_whatsapp_group = ""
 ai_agent_api_key = ""
 ai_model = []
 proxies = []
-
-with open('C:/Users/Alex/ListeningTool/github/threads_template/manifest.json', 'r',encoding="utf-8") as file:
+path = str(os.path.join(os.path.dirname(__file__),"manifest.json"))
+with open(path, 'r',encoding="utf-8") as file:
     manifest = json.load(file)
     client = manifest["client"]
     keyword_list = manifest["keyword_list"]
-    day_range = manifest['day_range']
+    hour_range = manifest['hour_range']
     interval = manifest["interval"]
     target_path = manifest["target_path"]
     light_scan_mode = manifest["light_scan_mode"]
@@ -62,7 +64,7 @@ tempStorge7 = []
 tempStorge8 = []
 tempStorge9 = []
 tempStorge10 = []
-def parse_thread(data: Dict) -> Dict:
+def parse_thread(data: Dict,keyword:str) -> Dict:
     """Parse Twitter tweet JSON dataset for the most important fields"""
     result = jmespath.search(
         """{
@@ -77,7 +79,7 @@ def parse_thread(data: Dict) -> Dict:
         user_pk: post.user.pk,
         user_id: post.user.id,
         has_audio: post.has_audio,
-        reply_count: view_replies_cta_string,
+        keyword: view_replies_cta_string,
         direct_reply_count: post.text_post_app_info.direct_reply_count,
         like_count: post.like_count,
         images: post.carousel_media[].image_versions2.candidates[1].url,
@@ -88,16 +90,42 @@ def parse_thread(data: Dict) -> Dict:
         data,
     )
     result["videos"] = list(set(result["videos"] or []))
-    if result["reply_count"] and type(result["reply_count"]) != int:
+    if result["keyword"] and type(result["keyword"]) != int:
         
         
         #result["reply_count"] = int(result["reply_count"].split(" ")[0])
-        result["reply_count"] = 10
+        result["keyword"] = keyword
     result[
         "url"
     ] = f"https://www.threads.net/@{result['username']}/post/{result['code']}"
     return result
 
+def hourDifferent(postTimeStamp)->int:
+    timeDifferentHour = 24
+    now = result_text_cleaning.timestampConvert(time.time())
+    postTime = result_text_cleaning.timestampConvert(postTimeStamp)
+    postyear = int(postTime[:4])
+    postMonth = int(postTime[5:7])
+    postDay = int(postTime[8:10])
+    postHour = int(postTime[11:13])
+    postMinute = int(postTime[14:16])
+    postSecond = int(postTime[17:19])
+    nowYear = int(now[:4])
+    nowMonth = int(now[5:7])
+    nowDay = int(now[8:10])
+    nowHour = int(now[11:13])
+    nowMinute = int(now[14:16])
+    nowSecond = int(now[17:19])
+    publishDay = datetime(year = postyear, month = postMonth, day = postDay,hour=postHour,minute= postMinute,second= nowSecond)
+    today = datetime(year = nowYear, month= nowMonth, day= nowDay,hour=nowHour,minute= nowMinute, second= postSecond)
+    if (today-publishDay).days != 0:
+        timeDifferentHour = 24
+    elif (today-publishDay).days == 0:
+        timeDifferentHour = math.ceil((((today-publishDay).seconds)/60)/60)
+    else:
+        timeDifferentHour = 24
+    #print(timeDifferentHour)
+    return timeDifferentHour
 
 def scrape_thread(url: str,thread_keyword) -> dict:
     """Scrape Threads post and replies from a given URL"""
@@ -156,7 +184,7 @@ def scrape_thread(url: str,thread_keyword) -> dict:
             #print(f"After json loads and nested lookup thread_items, there are total :{len(testHiddenSet3)} hidden sets.")
 
             # use our jmespath parser to reduce the dataset to the most important fields
-            threads = [parse_thread(t) for thread in thread_items for t in thread]
+            threads = [parse_thread(t,thread_keyword) for thread in thread_items for t in thread]
             
             
             return {
@@ -203,7 +231,7 @@ def find_hidden_comment(post:Dict,thread_keyword,tempStorge):
                 username = reply["username"]
                 code = reply["code"]
                 text = reply["text"]
-                #print(f"this comment {text} has {direct_reply_count} replies")
+            #print(f"this comment {text} has {direct_reply_count} replies")
             #print(username)
             #print(code)
                 url =f"https://www.threads.com/@{username}/post/{code}"
@@ -222,48 +250,48 @@ def search_one_keyword(keword:str)->list:
         firstPost = search_result["thread"]
         firstPostUserName = firstPost["username"]
         firstPostCode = firstPost["code"]
+        firstPostLike = firstPost["like_count"]
+        firstPostReply = firstPost["direct_reply_count"]
         firstPostUrl = f"https://www.threads.com/@{firstPostUserName}/post/{firstPostCode}"
-        
         #exclude some old posts
         postTimeStamp = firstPost["published_on"]
-        postTime = result_text_cleaning.timestampConvert(postTimeStamp)
-        now = result_text_cleaning.timestampConvert(time.time())
-        postyear = int(postTime[:4])
-        postMonth = int(postTime[5:7])
-        postDay = int(postTime[8:10])
-        nowYear = int(now[:4])
-        nowMonth = int(now[5:7])
-        nowDay = int(now[8:10])
-        publishDay = datetime(postyear, postMonth, postDay)
-        today = datetime(nowYear, nowMonth, nowDay)
-        dayDifferent = (today-publishDay).days
-        if dayDifferent > day_range:
-            print(f"{firstPostUrl}\nThis Post was published over {day_range} days!")
-            
+        hour = hourDifferent(postTimeStamp)
+        #print(hour)
+        #url_list.append(firstPostUrl)
+        if hour > hour_range:
+            print(f"{firstPostUrl}\nThis Post was published over {hour_range} hours!")
         else:
             url_list.append(firstPostUrl)
+            #isExist = filter.checkIsUrlExist(firstPostUrl)
+            #if isExist["haveUrl"] == False:
+                #url_list.append(firstPostUrl)
+            #elif isExist["haveUrl"] == True and (isExist["like_count"] != firstPostLike or isExist["direct_reply_count"] != firstPostReply):
+                #url_list.append(firstPostUrl)
+            #else:
+                #print(f"{firstPostUrl}\nThis Post was searched last time and have no change.")
 
         for post in search_result["replies"]:
             postUserName = post["username"]
             postCode = post["code"]
+            postLike = post["like_count"]
+            postReply = post["direct_reply_count"]
             postUrl = f"https://www.threads.com/@{postUserName}/post/{postCode}"
             #exclude some old post
             postTimeStamp = post["published_on"]
-            postTime = result_text_cleaning.timestampConvert(postTimeStamp)
-            now = result_text_cleaning.timestampConvert(time.time())
-            postyear = int(postTime[:4])
-            postMonth = int(postTime[5:7])
-            postDay = int(postTime[8:10])
-            nowYear = int(now[:4])
-            nowMonth = int(now[5:7])
-            nowDay = int(now[8:10])
-            publishDay = datetime(postyear, postMonth, postDay)
-            today = datetime(nowYear, nowMonth, nowDay)
-            dayDifferent = (today-publishDay).days
-            if dayDifferent > day_range:
-                print(f"{postUrl}\nThis Post was published over {day_range} days!")
+            hour = hourDifferent(postTimeStamp)
+            #print(hour)
+            if hour > hour_range:
+                print(f"{postUrl}\nThis Post was published over {hour_range} hours!")
             else:
                 url_list.append(postUrl)
+
+                #isExist = filter.checkIsUrlExist(postUrl)
+                #if isExist["haveUrl"] == False:
+                    #url_list.append(postUrl)
+                #elif isExist["haveUrl"] == True and (isExist["like_count"] != postLike or isExist["direct_reply_count"] != postReply):
+                        #url_list.append(postUrl)
+                #else:
+                    #print(f"{postUrl}\nThis Post was searched last time and have no change.")
 
             
     except ValueError as e:
@@ -275,10 +303,10 @@ def search_one_keyword_all_comment(url_list:list,thread_keyword,tempStorge)->dic
     i = 1
     try:
         if url_list != []:
-            print(f"Keyword {thread_keyword} found {len(url_list)} Posts in recent {day_range} days.")
+            print(f"Keyword {thread_keyword} found {len(url_list)} Posts in recent {hour_range} hours.")
             for postUrl in url_list:
                 try:
-                    print(f"Post{i} start Listening... ")
+                    print(f"Post{i} : {postUrl} start Listening... ")
                     output = scrape_thread(postUrl,thread_keyword)
                     tempStorge.append(output)
                     
@@ -325,15 +353,38 @@ def search_multiple_keyword(keyword_list:list,file_path,tempStorge)->dict:
         return tempStorge
 
 
-def scan():
-    t1 = threading.Thread(target=search_multiple_keyword, args=(keyword_list[:4],target_path+"stressTest1.json",tempStorge1))
-    t2 = threading.Thread(target=search_multiple_keyword, args=(keyword_list[4:],target_path+"stressTest2.json",tempStorge2))
+def scan(clientName,keyword_list_main):
+    currentTime = result_text_cleaning.timestampConvert(time.time())
+    print(f"{currentTime} : Working for {clientName}...")
+    print(f"{currentTime} : Distributing Keyword...")
+    t = ThreadDistribue(keyword_list_main)
+    print(f"Total of {len(keyword_list_main)} keywords, each thread scans {len(t["t1"])} keywords...")
+    t1 = threading.Thread(target=search_multiple_keyword, args=(t["t1"],target_path+f"{clientName}1.json",tempStorge1))
+    t2 = threading.Thread(target=search_multiple_keyword, args=(t["t2"],target_path+f"{clientName}2.json",tempStorge2))
+    t3 = threading.Thread(target=search_multiple_keyword, args=(t["t3"],target_path+f"{clientName}3.json",tempStorge3))
+    t4 = threading.Thread(target=search_multiple_keyword, args=(t["t4"],target_path+f"{clientName}4.json",tempStorge4))
+    t5 = threading.Thread(target=search_multiple_keyword, args=(t["t5"],target_path+f"{clientName}5.json",tempStorge5))
+    t6 = threading.Thread(target=search_multiple_keyword, args=(t["t6"],target_path+f"{clientName}6.json",tempStorge6))
+    t7 = threading.Thread(target=search_multiple_keyword, args=(t["t7"],target_path+f"{clientName}7.json",tempStorge7))
+    t8 = threading.Thread(target=search_multiple_keyword, args=(t["t8"],target_path+f"{clientName}8.json",tempStorge8))
     t1.start()
     t2.start()
+    t3.start()
+    t4.start()
+    t5.start()
+    t6.start()
+    t7.start()
+    t8.start()
     currentTime = result_text_cleaning.timestampConvert(time.time())
     print(f"{currentTime} : Scanning Started.")
     t1.join()
     t2.join()
+    t3.join()
+    t4.join()
+    t5.join()
+    t6.join()
+    t7.join()
+    t8.join()
     currentTime = result_text_cleaning.timestampConvert(time.time())
     print(f"{currentTime} : Scanning Finished.")
     
@@ -341,7 +392,35 @@ def test_schedule():
     print("running!")
 
 
+def ThreadDistribue(keyword_list):
+    #print(keyword_list)
+    #totalKeyword = len(keyword_list)
+    totalKeyword = len(keyword_list)
+    keywordPerThread = 0
+    lastThread = 0
+    if totalKeyword%8 == 0:
+        keywordPerThread = int(totalKeyword/8)
+    else:
+        keywordPerThread = math.floor(totalKeyword/7)
+        #lastThread = math.ceil(totalKeyword%7)
+    threadKeywordList = {"t1":keyword_list[:keywordPerThread],
+                         "t2":keyword_list[keywordPerThread:keywordPerThread*2],
+                         "t3":keyword_list[keywordPerThread*2:keywordPerThread*3],
+                         "t4":keyword_list[keywordPerThread*3:keywordPerThread*4],
+                         "t5":keyword_list[keywordPerThread*4:keywordPerThread*5],
+                         "t6":keyword_list[keywordPerThread*5:keywordPerThread*6],
+                         "t7":keyword_list[keywordPerThread*6:keywordPerThread*7],
+                         "t8":keyword_list[keywordPerThread*7:]
+                         }
+    return threadKeywordList
+    
+    
+#if __name__ == "__main__":
+    #l = keyword_list[2]["華納"]
+    #print(l)
+#print(past)
 
+#print(f"{postHour}\n{postMinute}\n{postSecond}")
 #test_search = scrape_thread("https://www.threads.com/search?q=%E5%BC%B5%E5%A4%A9%E8%B3%A6&serp_type=recent")
 #print(test_search)
 #writeJson(r"C:/Users/Alex/threadSearchOutput.json",test_search)
@@ -354,5 +433,65 @@ def test_schedule():
             numberOfScan+=1
     except:
         print("crash!")
+
+keywordTestList = ["容祖兒","joey","joey yung","張敬軒","軒公","軒少","軒仔","Hins Cheung","張寧","古巨基","古Sir","古仔","謝霆鋒","鋒味","謝檸檬","曾傲棐","許靖韻","VIVA","英皇","姜咏鑫","李晞彤","馬思惠","張鈊貽","李幸倪","Gin Lee","楊千嬅"]
+    threadKeywordList = ThreadDistribue(keywordTestList)
+    print(threadKeywordList["t1"])
+    print(threadKeywordList["t2"])
+    print(threadKeywordList["t3"])
+    print(threadKeywordList["t4"])
+    print(threadKeywordList["t5"])
+    print(threadKeywordList["t6"])
+    print(threadKeywordList["t7"])
+    print(threadKeywordList["t8"])
+
+d = hourDifferent(1760407013)
+t = hourDifferent(time.time())
+today = result_text_cleaning.timestampConvert(time.time())
+past  = result_text_cleaning.timestampConvert(1760407013)
+print(d)
+print(t)
+print(today)
+print(past)
+if d > hour_range:
+    print(f"This Post was published over {hour_range} hours!")
+else:
+    print("OK!")
+
+
+    #d = hourDifferent(1760360246)
+    #t = hourDifferent(time.time())
+    now = result_text_cleaning.timestampConvert(time.time())
+    postTime  = result_text_cleaning.timestampConvert(1760360246)
+    postyear = int(postTime[:4])
+    postMonth = int(postTime[5:7])
+    postDay = int(postTime[8:10])
+    postHour = int(postTime[11:13])
+    postMinute = int(postTime[14:16])
+    postSecond = int(postTime[17:19])
+    nowYear = int(now[:4])
+    nowMonth = int(now[5:7])
+    nowDay = int(now[8:10])
+    nowHour = int(now[11:13])
+    nowMinute = int(now[14:16])
+    nowSecond = int(now[17:19])
+    publishDay = datetime(year = postyear, month = postMonth, day = postDay,hour=postHour,minute= postMinute,second= nowSecond)
+    today = datetime(year = nowYear, month= nowMonth, day= nowDay,hour=nowHour,minute= nowMinute, second= postSecond)
+    print((today-publishDay).days)
+    print(int((((today-publishDay).seconds)/60)/60))
+    if (today-publishDay).days != 0:
+        timeDifferentHour = 24
+    elif (today-publishDay).days == 0:
+        timeDifferentHour = int((((today-publishDay).seconds)/60)/60)
+    else:
+        timeDifferentHour = 24
+    
+    if timeDifferentHour > hour_range:
+        print(f"This Post was published over {hour_range} hours!")
+    else:
+        print("OK!")
+
+    n = math.ceil(4.22)
+    print(n)
     """
         

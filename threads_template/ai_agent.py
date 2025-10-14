@@ -1,5 +1,8 @@
 import json
 from openai import OpenAI
+import result_text_cleaning
+import time
+import os
 #Get setting from manifest json file
 client = ""
 keyword_list = []
@@ -11,7 +14,8 @@ ai_agent_api_key = ""
 ai_model = []
 proxies = []
 
-with open('C:/Users/Alex/ListeningTool/github/threads_template/manifest.json', 'r',encoding="utf-8") as file:
+path = str(os.path.join(os.path.dirname(__file__),"manifest.json"))
+with open(path, 'r',encoding="utf-8") as file:
     manifest = json.load(file)
     MarketingClient = manifest["client"]
     keyword_list = manifest["keyword_list"]
@@ -26,8 +30,11 @@ with open('C:/Users/Alex/ListeningTool/github/threads_template/manifest.json', '
 #def openrouter(api_key,input_text,model):
 ai_input = ""
 def callAI(resultText)->str:
+    now = result_text_cleaning.timestampConvert(time.time())
+    print(f"{now} : Start Calling AI Agent.")
+    
     ai_input = prompt+"\n"+resultText
-    ai_reply = "請聯絡我們:12345678!"
+    ai_reply = "免費AI暫時用完，請聯絡我們:12345678!"
     try:
         ai_reply = ai_model_shift(ai_input,0)
     except:
@@ -43,6 +50,7 @@ def callAI(resultText)->str:
     
 
 def ai_model_shift(inputText,number):
+    print(f"Using Ai model {ai_model[number]}")
     client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=ai_agent_api_key[0],
@@ -63,4 +71,5 @@ def ai_model_shift(inputText,number):
     )
     ai_reply = str(completion.choices[0].message.content)
     #print(completion.choices[0].message.content)
+    
     return ai_reply

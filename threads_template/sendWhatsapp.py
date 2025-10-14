@@ -5,17 +5,31 @@ import pyperclip
 import pyautogui
 import threading
 import getCurrentTime
-
-
-def paste(input:str):
-    #print("t2 open!")
-    time.sleep(120)
-    #print("t2 started!")
+import result_text_cleaning
+def directPasteAndSend(input:str):
     pyperclip.copy(input)
     #time.sleep(1)
     pyautogui.hotkey("Ctrl","V")
     pyautogui.hotkey("enter")
+    
 
+def paste(AIinput:str,postListMessage:str):
+    time.sleep(120)
+    #print("t2 open!")
+    #print("t2 started!")
+    pyperclip.copy(AIinput)
+    pyautogui.hotkey("Ctrl","V")
+    pyautogui.hotkey("enter")
+    if postListMessage != "":
+        postListMessageList = postListMessage.split("________")
+        i = 1
+        for text in postListMessageList[:-1]:
+            heading = f"\n******帖文{i}******\n"
+            heading += text
+            directPasteAndSend(heading)
+            i += 1
+    else:
+        print("NO Output Text!")
 def openWhatsapp(hour,minute,targetGroup):
     currentTime = getCurrentTime.getCurrentTime()
     second = currentTime['second']
@@ -24,7 +38,7 @@ def openWhatsapp(hour,minute,targetGroup):
     #print("t2 started!")
     pwk.sendwhatmsg_to_group(targetGroup, " ",time_hour=hour, time_min=minute+2, wait_time=15, tab_close=True, close_time=120)
 
-def sendMessage(outputText,targetGroup):
+def sendMessage(outputText,postListMessage,targetGroup):
     currentTime = getCurrentTime.getCurrentTime()
 
     year = currentTime['year']
@@ -37,7 +51,7 @@ def sendMessage(outputText,targetGroup):
     #print(f"{hour}:{minute}:{second}")
     
     t1 = threading.Thread(target=openWhatsapp,args=(hour,minute,targetGroup,))
-    t2 = threading.Thread(target=paste,args = (outputText,))
+    t2 = threading.Thread(target=paste,args = (outputText,postListMessage,))
     t1.start()
     t2.start()
     t1.join()

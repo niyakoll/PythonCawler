@@ -8,7 +8,7 @@ import getCurrentTime
 import result_text_cleaning
 def directPasteAndSend(input:str):
     pyperclip.copy(input)
-    #time.sleep(1)
+    time.sleep(1)
     pyautogui.hotkey("Ctrl","V")
     pyautogui.hotkey("enter")
     

@@ -8,6 +8,7 @@ import schedule
 import result_text_cleaning
 import ai_agent
 import os
+from itertools import chain
 #Get setting from manifest json file
 client = ""
 keyword_list = []
@@ -34,27 +35,36 @@ with open(path, 'r',encoding="utf-8") as file:
 
 
 
-def startRunning(index,clientName,targetGroup):
+def startScanning():
+    keyword_list_main = combineList()
+    print(keyword_list_main)
+    threads_main.scan(keyword_list_main)
+
+def Distribute(clientName,targetWhatsappGroup):
+    result = ""
+    recentPostList= ""
+    result += result_text_cleaning.formatText(f"searchResult",clientName)
+    recentPostList += result_text_cleaning.postList(f"searchResult",clientName)
     
-    keyword_list_main = keyword_list[index][clientName]
-    threads_main.scan(clientName,keyword_list_main)
-    result = result_text_cleaning.formatText(f"{clientName}1.json")
-    result += result_text_cleaning.formatText(f"{clientName}2.json")
-    result += result_text_cleaning.formatText(f"{clientName}3.json")
-    result += result_text_cleaning.formatText(f"{clientName}4.json")
-    result += result_text_cleaning.formatText(f"{clientName}5.json")
-    result += result_text_cleaning.formatText(f"{clientName}6.json")
-    result += result_text_cleaning.formatText(f"{clientName}7.json")
-    result += result_text_cleaning.formatText(f"{clientName}8.json")
-    recentPostList = "\n\n以下的全部帖文的列表:\n"
-    recentPostList += result_text_cleaning.postList(f"{clientName}1.json")
-    recentPostList += result_text_cleaning.postList(f"{clientName}2.json")
-    recentPostList += result_text_cleaning.postList(f"{clientName}3.json")
-    recentPostList += result_text_cleaning.postList(f"{clientName}4.json")
-    recentPostList += result_text_cleaning.postList(f"{clientName}5.json")
-    recentPostList += result_text_cleaning.postList(f"{clientName}6.json")
-    recentPostList += result_text_cleaning.postList(f"{clientName}7.json")
-    recentPostList += result_text_cleaning.postList(f"{clientName}8.json")
+    with open(f"C:/Users/Alex/ListeningTool/github/threads_template/result/{clientName}PostListOutput.txt","w",encoding="utf-8") as f:
+        f.write(recentPostList)
+    with open(f"C:/Users/Alex/ListeningTool/github/threads_template/result/{clientName}AIOutput.txt","w",encoding="utf-8") as f:
+        f.write(result)
+    if len(result) > 15:
+        try:
+            now = result_text_cleaning.timestampConvert(time.time())
+            aiText = ai_agent.callAI(result)
+            sendWhatsapp.sendMessage(f"{clientName} 你好!\n{aiText}",recentPostList,targetWhatsappGroup)
+            #print("have thing")
+        except Exception as e:
+            print(e)
+    else:
+        now = result_text_cleaning.timestampConvert(time.time())
+        print(f"{now} , Found no Post for {clientName}.")
+        sendWhatsapp.sendMessage(f"{clientName} 你好!\n{now} 暫時未找到新的帖文。","",targetWhatsappGroup)
+        #print("nothing!")
+
+"""
     with open(target_path+f"{clientName}ai.txt","w",encoding="utf-8") as f:
         f.write(result)
     with open(target_path+f"{clientName}postList.txt","w",encoding="utf-8") as f:
@@ -72,48 +82,14 @@ def startRunning(index,clientName,targetGroup):
     #sendWhatsapp.sendMessage(aiText,recentPostList,targetGroup)
 
     #print(targetGroup)
-    
+"""
 
 def packAllScanner():
-    TVBaiText = ""
-    TVBpostText = ""
-    楊老闆aiText = ""
-    楊老闆postText = ""
-    華納aiText = ""
-    華納postText = ""
-
-    s1 = threading.Thread(target= startRunning ,args=(1,"TVB","GCkNXoXxIL31cpfhwN9NSO"))
-    s2 = threading.Thread(target= startRunning ,args=(0,"楊老闆","D5pbC6ipk3G3NMVMWOFA2f"))
-    s3 = threading.Thread(target= startRunning ,args=(2,"華納","BxWKGp5kMCf9m50ypl1VDa"))
-    #s4 = threading.Thread(target= startRunning ,args=(5,"古天樂","GCkNXoXxIL31cpfhwN9NSO"))
-    s1.start()
-    s2.start()
-    s3.start()
-    #s4.start()
-    s1.join()
-    s2.join()
-    s3.join()
-    #s4.join()
-    with open(target_path+"TVBai.txt",encoding="utf-8") as f:
-        text = f.read()
-        TVBaiText = ai_agent.callAI(text)
-    with open(target_path+"TVBpostList.txt",encoding="utf-8") as f:
-        TVBpostText = f.read()
-        sendWhatsapp.sendMessage(TVBaiText,TVBpostText,"GCkNXoXxIL31cpfhwN9NSO")
-
-    with open(target_path+"楊老闆ai.txt",encoding="utf-8") as f:
-        text = f.read()
-        楊老闆aiText = ai_agent.callAI(text)
-    with open(target_path+"楊老闆postList.txt",encoding="utf-8") as f:
-        楊老闆postText = f.read()
-        sendWhatsapp.sendMessage(楊老闆aiText,楊老闆postText,"D5pbC6ipk3G3NMVMWOFA2f")
-
-    with open(target_path+"華納ai.txt",encoding="utf-8") as f:
-        text = f.read()
-        華納aiText = ai_agent.callAI(text)
-    with open(target_path+"華納postList.txt",encoding="utf-8") as f:
-        華納postText = f.read()
-        sendWhatsapp.sendMessage(華納aiText,華納postText,"BxWKGp5kMCf9m50ypl1VDa")
+    startScanning()
+    #Distribute("TVB","GCkNXoXxIL31cpfhwN9NSO")
+    Distribute("楊老闆","D5pbC6ipk3G3NMVMWOFA2f")
+    Distribute("華納","BxWKGp5kMCf9m50ypl1VDa")
+    Distribute("林盛斌","ERiHadsFxk91XroB2Vyvdz")
 
     now = result_text_cleaning.timestampConvert(time.time())
     print(f"{now} : Whole Process Finished.")
@@ -121,18 +97,30 @@ def packAllScanner():
 def test_schedule():
     currentTime = getCurrentTime.getCurrentTime()
     print(f"{currentTime['hour']}:{currentTime['minute']}:{currentTime['second']} running!")
+def combineList()->list:
+    allKeyword = []
+    try:
+        merge = list(chain.from_iterable([list(client.values()) for client in keyword_list]))
+        for cList in merge:
+             allKeyword.extend(cList)
+        #print(allKeyword)   
+    except Exception as e:
+        print(f"{e}\nCombine List Error!")
+    finally:
+        return allKeyword
 
 if __name__ == "__main__":
-
+    
     try:
+        #print(combineList())
         packAllScanner()
-        schedule.every(interval).minutes.do(packAllScanner)   
-    except:
-        print("crash!")
+        #schedule.every(interval).minutes.do(packAllScanner)
+    except Exception as e:
+        print(f"{e}")
 
-    while True:
+    #while True:
     #Checks whether a scheduled task 
     #is pending to run or not
-        schedule.run_pending()
-        time.sleep(1)
+        #schedule.run_pending()
+        #time.sleep(1)
         

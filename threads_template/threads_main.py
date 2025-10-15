@@ -79,7 +79,7 @@ def parse_thread(data: Dict,keyword:str) -> Dict:
         user_pk: post.user.pk,
         user_id: post.user.id,
         has_audio: post.has_audio,
-        keyword: view_replies_cta_string,
+        keyword: post.like_count,
         direct_reply_count: post.text_post_app_info.direct_reply_count,
         like_count: post.like_count,
         images: post.carousel_media[].image_versions2.candidates[1].url,
@@ -90,14 +90,12 @@ def parse_thread(data: Dict,keyword:str) -> Dict:
         data,
     )
     result["videos"] = list(set(result["videos"] or []))
-    if result["keyword"] and type(result["keyword"]) != int:
+    
         
         
         #result["reply_count"] = int(result["reply_count"].split(" ")[0])
-        result["keyword"] = keyword
-    result[
-        "url"
-    ] = f"https://www.threads.net/@{result['username']}/post/{result['code']}"
+    result["keyword"] = keyword
+    result["url"] = f"https://www.threads.net/@{result['username']}/post/{result['code']}"
     return result
 
 def hourDifferent(postTimeStamp)->int:
@@ -242,11 +240,11 @@ def find_hidden_comment(post:Dict,thread_keyword,tempStorge):
     finally:
         return tempStorge
             
-def search_one_keyword(keword:str)->list:
+def search_one_keyword(keyword:str)->list:
     url_list = []
     try:
-        search_url = f"https://www.threads.com/search?q={keword}&serp_type=recent"
-        search_result = scrape_thread(search_url,keword)
+        search_url = f"https://www.threads.com/search?q={keyword}&serp_type=recent"
+        search_result = scrape_thread(search_url,keyword)
         firstPost = search_result["thread"]
         firstPostUserName = firstPost["username"]
         firstPostCode = firstPost["code"]
@@ -295,7 +293,7 @@ def search_one_keyword(keword:str)->list:
 
             
     except ValueError as e:
-        print(f"Error scraping keyword {keword}: {e}")
+        print(f"Error scraping keyword {keyword}: {e}")
     finally:
         return url_list
 
@@ -325,10 +323,10 @@ def search_one_keyword_all_comment(url_list:list,thread_keyword,tempStorge)->dic
 
         return tempStorge
 
-def search_multiple_keyword(keyword_list:list,file_path,tempStorge)->dict:
+def search_multiple_keyword(all_keyword_list:list,file_path,tempStorge)->dict:
     start = time.time()
     try:
-        for keyword in keyword_list:
+        for keyword in all_keyword_list:
             time.sleep(2)
             try:
                 print(f"Keyword {keyword} Start Listening...")
@@ -353,20 +351,22 @@ def search_multiple_keyword(keyword_list:list,file_path,tempStorge)->dict:
         return tempStorge
 
 
-def scan(clientName,keyword_list_main):
+def scan(keyword_list_main):
     currentTime = result_text_cleaning.timestampConvert(time.time())
-    print(f"{currentTime} : Working for {clientName}...")
+    print(f"{currentTime} : Start Working ...")
     print(f"{currentTime} : Distributing Keyword...")
     t = ThreadDistribue(keyword_list_main)
     print(f"Total of {len(keyword_list_main)} keywords, each thread scans {len(t["t1"])} keywords...")
-    t1 = threading.Thread(target=search_multiple_keyword, args=(t["t1"],target_path+f"{clientName}1.json",tempStorge1))
-    t2 = threading.Thread(target=search_multiple_keyword, args=(t["t2"],target_path+f"{clientName}2.json",tempStorge2))
-    t3 = threading.Thread(target=search_multiple_keyword, args=(t["t3"],target_path+f"{clientName}3.json",tempStorge3))
-    t4 = threading.Thread(target=search_multiple_keyword, args=(t["t4"],target_path+f"{clientName}4.json",tempStorge4))
-    t5 = threading.Thread(target=search_multiple_keyword, args=(t["t5"],target_path+f"{clientName}5.json",tempStorge5))
-    t6 = threading.Thread(target=search_multiple_keyword, args=(t["t6"],target_path+f"{clientName}6.json",tempStorge6))
-    t7 = threading.Thread(target=search_multiple_keyword, args=(t["t7"],target_path+f"{clientName}7.json",tempStorge7))
-    t8 = threading.Thread(target=search_multiple_keyword, args=(t["t8"],target_path+f"{clientName}8.json",tempStorge8))
+    t1 = threading.Thread(target=search_multiple_keyword, args=(t["t1"],target_path+f"searchResult1.json",tempStorge1))
+    t2 = threading.Thread(target=search_multiple_keyword, args=(t["t2"],target_path+f"searchResult2.json",tempStorge2))
+    t3 = threading.Thread(target=search_multiple_keyword, args=(t["t3"],target_path+f"searchResult3.json",tempStorge3))
+    t4 = threading.Thread(target=search_multiple_keyword, args=(t["t4"],target_path+f"searchResult4.json",tempStorge4))
+    t5 = threading.Thread(target=search_multiple_keyword, args=(t["t5"],target_path+f"searchResult5.json",tempStorge5))
+    t6 = threading.Thread(target=search_multiple_keyword, args=(t["t6"],target_path+f"searchResult6.json",tempStorge6))
+    t7 = threading.Thread(target=search_multiple_keyword, args=(t["t7"],target_path+f"searchResult7.json",tempStorge7))
+    t8 = threading.Thread(target=search_multiple_keyword, args=(t["t8"],target_path+f"searchResult8.json",tempStorge8))
+    t9 = threading.Thread(target=search_multiple_keyword, args=(t["t9"],target_path+f"searchResult9.json",tempStorge9))
+    t10 = threading.Thread(target=search_multiple_keyword, args=(t["t10"],target_path+f"searchResult10.json",tempStorge10))
     t1.start()
     t2.start()
     t3.start()
@@ -375,6 +375,9 @@ def scan(clientName,keyword_list_main):
     t6.start()
     t7.start()
     t8.start()
+    t9.start()
+    t10.start()
+    
     currentTime = result_text_cleaning.timestampConvert(time.time())
     print(f"{currentTime} : Scanning Started.")
     t1.join()
@@ -385,6 +388,8 @@ def scan(clientName,keyword_list_main):
     t6.join()
     t7.join()
     t8.join()
+    t9.join()
+    t10.join()
     currentTime = result_text_cleaning.timestampConvert(time.time())
     print(f"{currentTime} : Scanning Finished.")
     
@@ -392,29 +397,37 @@ def test_schedule():
     print("running!")
 
 
-def ThreadDistribue(keyword_list):
+def ThreadDistribue(keyword_list_main):
     #print(keyword_list)
     #totalKeyword = len(keyword_list)
-    totalKeyword = len(keyword_list)
+    totalKeyword = len(keyword_list_main)
     keywordPerThread = 0
     lastThread = 0
-    if totalKeyword%8 == 0:
-        keywordPerThread = int(totalKeyword/8)
+    if totalKeyword%10 == 0:
+        keywordPerThread = int(totalKeyword/10)
     else:
-        keywordPerThread = math.floor(totalKeyword/7)
+        keywordPerThread = math.floor(totalKeyword/9)
         #lastThread = math.ceil(totalKeyword%7)
-    threadKeywordList = {"t1":keyword_list[:keywordPerThread],
-                         "t2":keyword_list[keywordPerThread:keywordPerThread*2],
-                         "t3":keyword_list[keywordPerThread*2:keywordPerThread*3],
-                         "t4":keyword_list[keywordPerThread*3:keywordPerThread*4],
-                         "t5":keyword_list[keywordPerThread*4:keywordPerThread*5],
-                         "t6":keyword_list[keywordPerThread*5:keywordPerThread*6],
-                         "t7":keyword_list[keywordPerThread*6:keywordPerThread*7],
-                         "t8":keyword_list[keywordPerThread*7:]
+    threadKeywordList = {"t1":keyword_list_main[:keywordPerThread],
+                         "t2":keyword_list_main[keywordPerThread:keywordPerThread*2],
+                         "t3":keyword_list_main[keywordPerThread*2:keywordPerThread*3],
+                         "t4":keyword_list_main[keywordPerThread*3:keywordPerThread*4],
+                         "t5":keyword_list_main[keywordPerThread*4:keywordPerThread*5],
+                         "t6":keyword_list_main[keywordPerThread*5:keywordPerThread*6],
+                         "t7":keyword_list_main[keywordPerThread*6:keywordPerThread*7],
+                         "t8":keyword_list_main[keywordPerThread*7:keywordPerThread*8],
+                         "t9":keyword_list_main[keywordPerThread*8:keywordPerThread*9],
+                         "t10":keyword_list_main[keywordPerThread*9:]
                          }
     return threadKeywordList
-    
-    
+
+#if __name__ == "__main__":
+      
+        
+
+
+
+
 #if __name__ == "__main__":
     #l = keyword_list[2]["華納"]
     #print(l)

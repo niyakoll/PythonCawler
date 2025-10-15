@@ -114,13 +114,14 @@ if __name__ == "__main__":
     try:
         #print(combineList())
         packAllScanner()
-        #schedule.every(interval).minutes.do(packAllScanner)
+        
+        schedule.every(interval).minutes.do(packAllScanner)
     except Exception as e:
         print(f"{e}")
 
-    #while True:
+    while True:
     #Checks whether a scheduled task 
     #is pending to run or not
-        #schedule.run_pending()
-        #time.sleep(1)
+        schedule.run_pending()
+        time.sleep(1)
         

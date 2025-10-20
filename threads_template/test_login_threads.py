@@ -49,6 +49,11 @@ extra_headers = {
     "Cache-Control": "no-cache"
     
 }
+cookies = [
+        {"name": "sessionid", "value": "77471764252%3ApfBOF9SJDvEG6C%3A8%3AAYhKZNdQNYRFezHnysVcWa2QvdokCsWR-rthsqcpKg", "domain": ".threads.com", "path": "/"},
+        {"name": "csrftoken", "value": "TUy0qEWzjX4SKYaC9fixySe34JChX52E",
+          "domain": ".threads.com", "path": "/"},
+    ]
 cache_header = "'Cache-Control': 'max-age=31536000'"
 testHiddenSet1 = []
 testHiddenSet2 = []
@@ -132,9 +137,11 @@ def scrape_thread(url: str,thread_keyword) -> dict:
         # start Playwright browser
         browser = pw.chromium.launch(headless=True)
         context = browser.new_context(viewport={"width": 1920, "height": 1080})
-        
+        #context.add_cookies(cookies)
         page = context.new_page()
         cdp_session = context.new_cdp_session(page)
+        
+        
         # Enable network domain
         #cdp_session.send("Network.enable")
         cdp_session.send("Network.clearBrowserCookies")
@@ -145,6 +152,7 @@ def scrape_thread(url: str,thread_keyword) -> dict:
 
         # go to url and wait for the page to load
         page.goto(url)
+        print("searching")
         # wait for page to finish loading
         page.wait_for_selector("[data-pressable-container=true]")
         # find all hidden datasets
@@ -243,9 +251,9 @@ def find_hidden_comment(post:Dict,thread_keyword,tempStorge):
 def search_one_keyword(keyword:str)->list:
     url_list = []
     try:
-        #search_url = f"https://www.threads.com/search?q={keyword}&serp_type=recent"
         search_url = f"https://www.threads.com/search?q={keyword}&filter=recent"
         search_result = scrape_thread(search_url,keyword)
+        
         firstPost = search_result["thread"]
         firstPostUserName = firstPost["username"]
         firstPostCode = firstPost["code"]
@@ -257,10 +265,11 @@ def search_one_keyword(keyword:str)->list:
         hour = hourDifferent(postTimeStamp)
         #print(hour)
         #url_list.append(firstPostUrl)
-        if hour > hour_range:
-            print(f"{firstPostUrl}\nThis Post was published over {hour_range} hours!")
-        else:
-            url_list.append(firstPostUrl)
+        #if hour > hour_range:
+            #print(f"{firstPostUrl}\nThis Post was published over {hour_range} hours!")
+        #else:
+        url_list.append(firstPostUrl)
+        print("success!")
             #isExist = filter.checkIsUrlExist(firstPostUrl)
             #if isExist["haveUrl"] == False:
                 #url_list.append(firstPostUrl)
@@ -279,10 +288,10 @@ def search_one_keyword(keyword:str)->list:
             postTimeStamp = post["published_on"]
             hour = hourDifferent(postTimeStamp)
             #print(hour)
-            if hour > hour_range:
-                print(f"{postUrl}\nThis Post was published over {hour_range} hours!")
-            else:
-                url_list.append(postUrl)
+            #if hour > hour_range:
+                #print(f"{postUrl}\nThis Post was published over {hour_range} hours!")
+            #else:
+            url_list.append(postUrl)
 
                 #isExist = filter.checkIsUrlExist(postUrl)
                 #if isExist["haveUrl"] == False:
@@ -422,8 +431,17 @@ def ThreadDistribue(keyword_list_main):
                          }
     return threadKeywordList
 
-#if __name__ == "__main__":
-      
+if __name__ == "__main__":
+
+    
+    urlList = search_one_keyword("阿bob")
+    print(urlList)
+    strUrl = str(urlList)
+    
+    with open(f"C:/Users/Alex/ListeningTool/github/threads_template/result/testLoginResult.txt","w",encoding="utf-8") as f:
+        f.write("以下是url"+strUrl)
+    #tempStorge11 = []
+    #search_multiple_keyword(all_keyword_list = ["阿bob"],file_path=target_path+f"testLoginResult1.json",tempStorge=tempStorge11)      
         
 
 
@@ -439,73 +457,4 @@ def ThreadDistribue(keyword_list_main):
 #print(test_search)
 #writeJson(r"C:/Users/Alex/threadSearchOutput.json",test_search)
 
-"""
-    numberOfScan = 0
-    try:
-        while numberOfScan < 30:
-            schedule.every(30).minutes.do(scan())
-            numberOfScan+=1
-    except:
-        print("crash!")
-
-keywordTestList = ["容祖兒","joey","joey yung","張敬軒","軒公","軒少","軒仔","Hins Cheung","張寧","古巨基","古Sir","古仔","謝霆鋒","鋒味","謝檸檬","曾傲棐","許靖韻","VIVA","英皇","姜咏鑫","李晞彤","馬思惠","張鈊貽","李幸倪","Gin Lee","楊千嬅"]
-    threadKeywordList = ThreadDistribue(keywordTestList)
-    print(threadKeywordList["t1"])
-    print(threadKeywordList["t2"])
-    print(threadKeywordList["t3"])
-    print(threadKeywordList["t4"])
-    print(threadKeywordList["t5"])
-    print(threadKeywordList["t6"])
-    print(threadKeywordList["t7"])
-    print(threadKeywordList["t8"])
-
-d = hourDifferent(1760407013)
-t = hourDifferent(time.time())
-today = result_text_cleaning.timestampConvert(time.time())
-past  = result_text_cleaning.timestampConvert(1760407013)
-print(d)
-print(t)
-print(today)
-print(past)
-if d > hour_range:
-    print(f"This Post was published over {hour_range} hours!")
-else:
-    print("OK!")
-
-
-    #d = hourDifferent(1760360246)
-    #t = hourDifferent(time.time())
-    now = result_text_cleaning.timestampConvert(time.time())
-    postTime  = result_text_cleaning.timestampConvert(1760360246)
-    postyear = int(postTime[:4])
-    postMonth = int(postTime[5:7])
-    postDay = int(postTime[8:10])
-    postHour = int(postTime[11:13])
-    postMinute = int(postTime[14:16])
-    postSecond = int(postTime[17:19])
-    nowYear = int(now[:4])
-    nowMonth = int(now[5:7])
-    nowDay = int(now[8:10])
-    nowHour = int(now[11:13])
-    nowMinute = int(now[14:16])
-    nowSecond = int(now[17:19])
-    publishDay = datetime(year = postyear, month = postMonth, day = postDay,hour=postHour,minute= postMinute,second= nowSecond)
-    today = datetime(year = nowYear, month= nowMonth, day= nowDay,hour=nowHour,minute= nowMinute, second= postSecond)
-    print((today-publishDay).days)
-    print(int((((today-publishDay).seconds)/60)/60))
-    if (today-publishDay).days != 0:
-        timeDifferentHour = 24
-    elif (today-publishDay).days == 0:
-        timeDifferentHour = int((((today-publishDay).seconds)/60)/60)
-    else:
-        timeDifferentHour = 24
-    
-    if timeDifferentHour > hour_range:
-        print(f"This Post was published over {hour_range} hours!")
-    else:
-        print("OK!")
-
-    n = math.ceil(4.22)
-    print(n)
-    """
         

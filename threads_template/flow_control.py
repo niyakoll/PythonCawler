@@ -41,6 +41,7 @@ def startScanning():
     threads_main.scan(keyword_list_main)
 
 def Distribute(clientName,targetWhatsappGroup):
+    aiText = ""
     result = ""
     recentPostList= ""
     result += result_text_cleaning.formatText(f"searchResult",clientName)
@@ -50,6 +51,7 @@ def Distribute(clientName,targetWhatsappGroup):
         f.write(recentPostList)
     with open(f"C:/Users/Alex/ListeningTool/github/threads_template/result/{clientName}AIOutput.txt","w",encoding="utf-8") as f:
         f.write(result)
+    
     if len(result) > 15:
         try:
             now = result_text_cleaning.timestampConvert(time.time())
@@ -87,10 +89,11 @@ def Distribute(clientName,targetWhatsappGroup):
 def packAllScanner():
     startScanning()
     #Distribute("TVB","GCkNXoXxIL31cpfhwN9NSO")
-    Distribute("楊老闆","D5pbC6ipk3G3NMVMWOFA2f")
-    Distribute("華納","BxWKGp5kMCf9m50ypl1VDa")
-    Distribute("林盛斌","ERiHadsFxk91XroB2Vyvdz")
-
+    #Distribute("楊老闆","D5pbC6ipk3G3NMVMWOFA2f")
+    #Distribute("華納","BxWKGp5kMCf9m50ypl1VDa")
+    Distribute("親愛的BOB","ERiHadsFxk91XroB2Vyvdz")
+    #test whatsapp group : LZTI3ZH7xkq3Nm9zoZyohX
+    #Distribute("親愛的BOB","LZTI3ZH7xkq3Nm9zoZyohX")
     now = result_text_cleaning.timestampConvert(time.time())
     print(f"{now} : Whole Process Finished.")
 

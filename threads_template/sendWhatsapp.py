@@ -6,6 +6,7 @@ import pyautogui
 import threading
 import getCurrentTime
 import result_text_cleaning
+from datetime import datetime
 def directPasteAndSend(input:str):
     pyperclip.copy(input)
     time.sleep(1)
@@ -14,7 +15,7 @@ def directPasteAndSend(input:str):
     
 
 def paste(AIinput:str,postListMessage:str):
-    time.sleep(120)
+    time.sleep(30)
     #print("t2 open!")
     #print("t2 started!")
     pyperclip.copy(AIinput)
@@ -30,13 +31,35 @@ def paste(AIinput:str,postListMessage:str):
             i += 1
     else:
         print("NO Output Text!")
+def sendAtPerfectMinutes():
+    while True:
+        current_time = datetime.now()
+
+        if current_time.second == 0:
+            print(current_time.second)
+            break
+
+    
+
 def openWhatsapp(hour,minute,targetGroup):
     currentTime = getCurrentTime.getCurrentTime()
     second = currentTime['second']
     openTime = 60 - second
-    #print(openTime)
-    #print("t2 started!")
-    pwk.sendwhatmsg_to_group(targetGroup, " ",time_hour=hour, time_min=minute+2, wait_time=15, tab_close=True, close_time=120)
+    waitTime = openTime - 0
+    closeTime = 60 - waitTime
+    if closeTime <= 0:
+        closeTime = 1
+    print(f"now second is {second}, opentime is {openTime}, waiting time is {waitTime}, close time is {closeTime}")
+    pwk.sendwhatmsg_to_group(targetGroup, " ",time_hour=hour, time_min=minute+1, wait_time=waitTime, tab_close=True, close_time=closeTime)
+    """
+    if second >= 50:
+        pwk.sendwhatmsg_to_group(targetGroup, " ",time_hour=hour, time_min=minute+1, wait_time=20, tab_close=True, close_time=85)
+    elif second <= 20:
+        pwk.sendwhatmsg_to_group(targetGroup, " ",time_hour=hour, time_min=minute+1, wait_time=45, tab_close=True, close_time=60)
+    else:
+        pwk.sendwhatmsg_to_group(targetGroup, " ",time_hour=hour, time_min=minute+1, wait_time=25, tab_close=True, close_time=80)
+    """
+
 
 def sendMessage(outputText,postListMessage,targetGroup):
     currentTime = getCurrentTime.getCurrentTime()
@@ -59,4 +82,4 @@ def sendMessage(outputText,postListMessage,targetGroup):
     print(f"Date: {year}-{month:02d}-{day:02d}, Time: {hour:02d}:{minute:02d}:{second:02d} Successfully Send Whatsapp Message!")
 
 #use case example
-#sendMessage("我是測試信息","LZTI3ZH7xkq3Nm9zoZyohX")
+#sendMessage("我是測試信息","Testing!","LZTI3ZH7xkq3Nm9zoZyohX")

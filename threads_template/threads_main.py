@@ -25,6 +25,7 @@ target_whatsapp_group = ""
 ai_agent_api_key = ""
 ai_model = []
 proxies = []
+proxies_api_key = ""
 path = str(os.path.join(os.path.dirname(__file__),"manifest.json"))
 with open(path, 'r',encoding="utf-8") as file:
     manifest = json.load(file)
@@ -38,13 +39,17 @@ with open(path, 'r',encoding="utf-8") as file:
     ai_agent_api_key = manifest["ai_agent_api_key"]
     ai_model = manifest["ai_model"]
     proxies = manifest["proxies"]
+    proxies_api_key = manifest["proxies_api_key"]
+
+# Proxy configuration (replace with your Oxylabs credentials)
+
 
 
 # specify the request headers
 extra_headers = {
     'sec-ch-ua': '\'Not A(Brand\';v=\'99\', \'Google Chrome\';v=\'121\', \'Chromium\';v=\'121\'',
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-    'accept-Language': 'en-US,en;q=0.9',
+    'accept-Language': 'zh-HK,zh;q=0.9',
     'referer': 'https://www.google.com/',
     "Cache-Control": "no-cache"
     
@@ -242,57 +247,60 @@ def find_hidden_comment(post:Dict,thread_keyword,tempStorge):
             
 def search_one_keyword(keyword:str)->list:
     url_list = []
+    searchType = ["serp_type=recent","filter=recent"]
     try:
-        #search_url = f"https://www.threads.com/search?q={keyword}&serp_type=recent"
-        search_url = f"https://www.threads.com/search?q={keyword}&filter=recent"
-        search_result = scrape_thread(search_url,keyword)
-        firstPost = search_result["thread"]
-        firstPostUserName = firstPost["username"]
-        firstPostCode = firstPost["code"]
-        firstPostLike = firstPost["like_count"]
-        firstPostReply = firstPost["direct_reply_count"]
-        firstPostUrl = f"https://www.threads.com/@{firstPostUserName}/post/{firstPostCode}"
-        #exclude some old posts
-        postTimeStamp = firstPost["published_on"]
-        hour = hourDifferent(postTimeStamp)
-        #print(hour)
-        #url_list.append(firstPostUrl)
-        if hour > hour_range:
-            print(f"{firstPostUrl}\nThis Post was published over {hour_range} hours!")
-        else:
-            url_list.append(firstPostUrl)
-            #isExist = filter.checkIsUrlExist(firstPostUrl)
-            #if isExist["haveUrl"] == False:
-                #url_list.append(firstPostUrl)
-            #elif isExist["haveUrl"] == True and (isExist["like_count"] != firstPostLike or isExist["direct_reply_count"] != firstPostReply):
-                #url_list.append(firstPostUrl)
-            #else:
-                #print(f"{firstPostUrl}\nThis Post was searched last time and have no change.")
-
-        for post in search_result["replies"]:
-            postUserName = post["username"]
-            postCode = post["code"]
-            postLike = post["like_count"]
-            postReply = post["direct_reply_count"]
-            postUrl = f"https://www.threads.com/@{postUserName}/post/{postCode}"
-            #exclude some old post
-            postTimeStamp = post["published_on"]
+        for type in searchType:
+            #search_url = f"https://www.threads.com/search?q={keyword}&serp_type=recent"
+            #time.sleep(1)
+            search_url = f"https://www.threads.com/search?q={keyword}&{type}"
+            search_result = scrape_thread(search_url,keyword)
+            firstPost = search_result["thread"]
+            firstPostUserName = firstPost["username"]
+            firstPostCode = firstPost["code"]
+            firstPostLike = firstPost["like_count"]
+            firstPostReply = firstPost["direct_reply_count"]
+            firstPostUrl = f"https://www.threads.com/@{firstPostUserName}/post/{firstPostCode}"
+            #exclude some old posts
+            postTimeStamp = firstPost["published_on"]
             hour = hourDifferent(postTimeStamp)
             #print(hour)
+            #url_list.append(firstPostUrl)
             if hour > hour_range:
-                print(f"{postUrl}\nThis Post was published over {hour_range} hours!")
+                print(f"{firstPostUrl}\nThis Post was published over {hour_range} hours!")
             else:
-                url_list.append(postUrl)
-
-                #isExist = filter.checkIsUrlExist(postUrl)
+                url_list.append(firstPostUrl)
+                #isExist = filter.checkIsUrlExist(firstPostUrl)
                 #if isExist["haveUrl"] == False:
-                    #url_list.append(postUrl)
-                #elif isExist["haveUrl"] == True and (isExist["like_count"] != postLike or isExist["direct_reply_count"] != postReply):
-                        #url_list.append(postUrl)
+                    #url_list.append(firstPostUrl)
+                #elif isExist["haveUrl"] == True and (isExist["like_count"] != firstPostLike or isExist["direct_reply_count"] != firstPostReply):
+                    #url_list.append(firstPostUrl)
                 #else:
-                    #print(f"{postUrl}\nThis Post was searched last time and have no change.")
+                    #print(f"{firstPostUrl}\nThis Post was searched last time and have no change.")
 
-            
+            for post in search_result["replies"]:
+                postUserName = post["username"]
+                postCode = post["code"]
+                postLike = post["like_count"]
+                postReply = post["direct_reply_count"]
+                postUrl = f"https://www.threads.com/@{postUserName}/post/{postCode}"
+                #exclude some old post
+                postTimeStamp = post["published_on"]
+                hour = hourDifferent(postTimeStamp)
+                #print(hour)
+                if hour > hour_range:
+                    print(f"{postUrl}\nThis Post was published over {hour_range} hours!")
+                else:
+                    url_list.append(postUrl)
+
+                    #isExist = filter.checkIsUrlExist(postUrl)
+                    #if isExist["haveUrl"] == False:
+                        #url_list.append(postUrl)
+                    #elif isExist["haveUrl"] == True and (isExist["like_count"] != postLike or isExist["direct_reply_count"] != postReply):
+                            #url_list.append(postUrl)
+                    #else:
+                        #print(f"{postUrl}\nThis Post was searched last time and have no change.")
+
+                
     except ValueError as e:
         print(f"Error scraping keyword {keyword}: {e}")
     finally:

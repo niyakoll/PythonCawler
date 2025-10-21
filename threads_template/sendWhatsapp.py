@@ -45,8 +45,11 @@ def openWhatsapp(hour,minute,targetGroup):
     currentTime = getCurrentTime.getCurrentTime()
     second = currentTime['second']
     openTime = 60 - second
-    waitTime = openTime - 0
-    closeTime = 60 - waitTime
+    
+    waitTime = openTime -  1
+    if waitTime <= 0:
+        waitTime = 7
+    closeTime = 80 - waitTime
     if closeTime <= 0:
         closeTime = 1
     print(f"now second is {second}, opentime is {openTime}, waiting time is {waitTime}, close time is {closeTime}")

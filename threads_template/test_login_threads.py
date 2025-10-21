@@ -14,6 +14,18 @@ import math
 import os
 import filter 
 
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+from bs4 import BeautifulSoup  #网页解析，获取数据
+import re  #正则表达式，进行文字匹配
+import urllib.request, urllib.error  #制定URL，获取网页数据
+#import xlwt  #进行excel操作
+import requests
+import json
+from selenium import webdriver
+from selenium.webdriver.common.action_chains import ActionChains
+
 #Get setting from manifest json file
 client = ""
 keyword_list = []
@@ -44,16 +56,23 @@ with open(path, 'r',encoding="utf-8") as file:
 extra_headers = {
     'sec-ch-ua': '\'Not A(Brand\';v=\'99\', \'Google Chrome\';v=\'121\', \'Chromium\';v=\'121\'',
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-    'accept-Language': 'en-US,en;q=0.9',
+    'accept-Language': 'zh-HK,zh;q=0.9',
     'referer': 'https://www.google.com/',
     "Cache-Control": "no-cache"
     
 }
-cookies = [
-        {"name": "sessionid", "value": "77471764252%3ApfBOF9SJDvEG6C%3A8%3AAYhKZNdQNYRFezHnysVcWa2QvdokCsWR-rthsqcpKg", "domain": ".threads.com", "path": "/"},
-        {"name": "csrftoken", "value": "TUy0qEWzjX4SKYaC9fixySe34JChX52E",
-          "domain": ".threads.com", "path": "/"},
-    ]
+
+proxy_configure={
+            "server": "https://195.12.225.81",
+            
+        }
+"""
+proxy={
+            "server": "47.240.86.21:3128",
+            "username": "your_username",  # Optional: for authenticated proxies
+            "password": "your_password"   # Optional: for authenticated proxies
+        }
+"""
 cache_header = "'Cache-Control': 'max-age=31536000'"
 testHiddenSet1 = []
 testHiddenSet2 = []
@@ -135,7 +154,8 @@ def scrape_thread(url: str,thread_keyword) -> dict:
     
     with sync_playwright() as pw:
         # start Playwright browser
-        browser = pw.chromium.launch(headless=True)
+        #browser = pw.chromium.launch(headless=True)
+        browser = pw.chromium.launch(headless=True ,proxy=proxy_configure)
         context = browser.new_context(viewport={"width": 1920, "height": 1080})
         #context.add_cookies(cookies)
         page = context.new_page()
@@ -151,8 +171,9 @@ def scrape_thread(url: str,thread_keyword) -> dict:
         #page.set_extra_http_headers(extra_headers)
 
         # go to url and wait for the page to load
-        page.goto(url)
-        print("searching")
+        response = page.goto(url)
+        print(response.status)
+        
         # wait for page to finish loading
         page.wait_for_selector("[data-pressable-container=true]")
         # find all hidden datasets
@@ -430,16 +451,60 @@ def ThreadDistribue(keyword_list_main):
                          "t10":keyword_list_main[keywordPerThread*9:]
                          }
     return threadKeywordList
+def URLtoHTML(url):
+    #i = random.randint(0,3)
+    time.sleep(1)
+    try:
+        options = Options()
+        options.add_argument('--ignore-certificate-errors')
+        #options.add_argument('user-agent="Mozilla/5.0"')
+        options.add_argument("--headless=new")
+        options.add_argument("--log-level=3")
+
+        driver = webdriver.Chrome(options=options)
+        driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+        "source": """
+        Object.defineProperty(navigator, 'webdriver', {
+        get: () => undefined
+        })
+        """
+        })
+        driver.get(url)
+        html = driver.page_source
+        driver.quit()
+    except Exception as e:
+        print(f"Error fetching URL {url}: {e}")
+        html = ""
+    finally:
+        return html
+
+def htmlToViewCount(html:str):
+    viewCountpattern = r'"view_count[s]?":\s*(\d+)\s*}'  # Matches e.g., "view_count": 1200}
+    viewCountList = re.findall(viewCountpattern, html, re.IGNORECASE)
+    viewCount = str(viewCountList[0])
+    return viewCount
 
 if __name__ == "__main__":
+    test_data = scrape_thread("https://www.threads.com/search?q=%E9%98%BFbob&filter=recent","bob")
+    print(test_data)
+    
 
+    #html = URLtoHTML("https://www.threads.com/@waikuen1997/post/DQA5dABCeBn")
+    #with open(f"C:/Users/Alex/ListeningTool/github/threads_template/result/testLoginResult.txt","r",encoding="utf-8") as f:
+        #html = f.read()
     
-    urlList = search_one_keyword("阿bob")
-    print(urlList)
-    strUrl = str(urlList)
+    #viewCount = nested_lookup("view_counts",html)
+    #viewCountpattern = r'"view_count[s]?":\s*(\d+)\s*}'  # Matches e.g., "view_count": 1200}
+    #viewCountList = re.findall(viewCountpattern, html, re.IGNORECASE)
+    #viewCount = viewCountList[0]
+    #print(viewCount)
+    #print(html)
+    #urlList = search_one_keyword("阿bob")
+    #print(urlList)
+    #strUrl = str(urlList)
     
-    with open(f"C:/Users/Alex/ListeningTool/github/threads_template/result/testLoginResult.txt","w",encoding="utf-8") as f:
-        f.write("以下是url"+strUrl)
+    #with open(f"C:/Users/Alex/ListeningTool/github/threads_template/result/testLoginResult.txt","w",encoding="utf-8") as f:
+        #f.write("以下是url"+strUrl)
     #tempStorge11 = []
     #search_multiple_keyword(all_keyword_list = ["阿bob"],file_path=target_path+f"testLoginResult1.json",tempStorge=tempStorge11)      
         

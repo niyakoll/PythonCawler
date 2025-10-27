@@ -49,9 +49,10 @@ def Distribute(clientName,targetWhatsappGroup,whapi_group_id):
         try:
             now = result_text_cleaning.timestampConvert(time.time())
             aiText = ai_agent.callAI(result)
-            response  = sendWhatsapp.whapi_sendMessage(f"{clientName} 你好!\n{aiText}\n{recentPostList}",whapi_group_id)
-            if response["error"]["code"] != 200:
-                sendWhatsapp.sendMessage(f"{clientName} 你好!\n{aiText}",recentPostList,targetWhatsappGroup)
+            sendWhatsapp.whapi_sendToClient(ai_message=aiText,postListMessage=recentPostList,whapi_group_id=whapi_group_id)
+            #response  = sendWhatsapp.whapi_sendMessage(f"{clientName} 你好!\n{aiText}\n{recentPostList}",whapi_group_id)
+            #if response["error"]["code"] != 200:
+                #sendWhatsapp.sendMessage(f"{clientName} 你好!\n{aiText}",recentPostList,targetWhatsappGroup)
         except Exception as e:
             #sendWhatsapp.sendMessage(f"{clientName} 你好!\n{aiText}",recentPostList,targetWhatsappGroup)
             print(e)
@@ -88,6 +89,14 @@ def combineList():
             keyword_list_main.extend(client_panel[client]["keyword"])    
     return keyword_list_main
 
+def clearRecord():
+    data = {}
+    try:
+        with open(str(os.path.join(os.path.dirname(__file__),"result",f"親愛的BOBoutputRecord.json")), 'w',encoding="utf-8") as file:
+            json.dump(data, file, indent=4,ensure_ascii=False)  # indent for pretty-printing
+    except IOError as e:
+        print(e)
+
 #run all client that are active(true)
 def OutputResult():
     clientList = []
@@ -108,10 +117,12 @@ def OutputResult():
         print(e)
 if __name__ == "__main__":
     try:
+        
         #directly run the whole program when click run 
         packAllScanner()
         #schedule the whole program run every {interval}(refer to manifest json setting) minutes.
         schedule.every(interval).minutes.do(packAllScanner)
+        schedule.every(90).minutes.do(clearRecord())
     except Exception as e:
         print(f"{e}")
     while True:

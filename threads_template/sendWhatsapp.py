@@ -118,3 +118,16 @@ def whapi_sendMessage(message,whapi_group_id):
 
     print(response.text)
 
+def whapi_sendToClient(ai_message,postListMessage,whapi_group_id):
+    whapi_sendMessage(ai_message,whapi_group_id)
+    if len(postListMessage) > 20:
+        postListMessageList = postListMessage.split("________")
+        i = 1
+        for text in postListMessageList[:-1]:
+            heading = f"\n******帖文{i}******\n"
+            heading += text
+            whapi_sendMessage(heading,whapi_group_id)
+            i += 1
+    else:
+        print("NO Output Text!")
+    

@@ -41,12 +41,10 @@ path = str(os.path.join(os.path.dirname(__file__),"manifest.json"))
 with open(path, 'r',encoding="utf-8") as file:
     manifest = json.load(file)
     client = manifest["client"]
-    keyword_list = manifest["keyword_list"]
+   
     hour_range = manifest['hour_range']
     interval = manifest["interval"]
-    target_path = manifest["target_path"]
-    light_scan_mode = manifest["light_scan_mode"]
-    target_whatsapp_group = manifest["target_whatsapp_group"]
+    
     ai_agent_api_key = manifest["ai_agent_api_key"]
     ai_model = manifest["ai_model"]
     proxies = manifest["proxies"]
@@ -88,7 +86,7 @@ tempStorge7 = []
 tempStorge8 = []
 tempStorge9 = []
 tempStorge10 = []
-def parse_thread(data: Dict,keyword:str) -> Dict:
+def parse_thread(data: Dict,keyword:str,viewCount) -> Dict:
     """Parse Twitter tweet JSON dataset for the most important fields"""
     result = jmespath.search(
         """{
@@ -106,6 +104,7 @@ def parse_thread(data: Dict,keyword:str) -> Dict:
         keyword: post.like_count,
         direct_reply_count: post.text_post_app_info.direct_reply_count,
         like_count: post.like_count,
+        viewCount:post.like_count,
         images: post.carousel_media[].image_versions2.candidates[1].url,
         image_count: post.carousel_media_count,
         videos: post.video_versions[].url
@@ -119,6 +118,7 @@ def parse_thread(data: Dict,keyword:str) -> Dict:
         
         #result["reply_count"] = int(result["reply_count"].split(" ")[0])
     result["keyword"] = keyword
+    result["viewCount"] = viewCount
     result["url"] = f"https://www.threads.net/@{result['username']}/post/{result['code']}"
     return result
 
@@ -154,8 +154,8 @@ def scrape_thread(url: str,thread_keyword) -> dict:
     
     with sync_playwright() as pw:
         # start Playwright browser
-        #browser = pw.chromium.launch(headless=True)
-        browser = pw.chromium.launch(headless=True ,proxy=proxy_configure)
+        browser = pw.chromium.launch(headless=True)
+        #browser = pw.chromium.launch(headless=True ,proxy=proxy_configure)
         context = browser.new_context(viewport={"width": 1920, "height": 1080})
         #context.add_cookies(cookies)
         page = context.new_page()
@@ -172,7 +172,13 @@ def scrape_thread(url: str,thread_keyword) -> dict:
 
         # go to url and wait for the page to load
         response = page.goto(url)
-        print(response.status)
+        #print(page.content)
+        viewCount = ""
+        viewCount = htmlToViewCount(page.content())
+        
+
+        
+        #print(response.status)
         
         # wait for page to finish loading
         page.wait_for_selector("[data-pressable-container=true]")
@@ -211,7 +217,7 @@ def scrape_thread(url: str,thread_keyword) -> dict:
             #print(f"After json loads and nested lookup thread_items, there are total :{len(testHiddenSet3)} hidden sets.")
 
             # use our jmespath parser to reduce the dataset to the most important fields
-            threads = [parse_thread(t,thread_keyword) for thread in thread_items for t in thread]
+            threads = [parse_thread(t,thread_keyword,viewCount) for thread in thread_items for t in thread]
             
             
             return {
@@ -480,13 +486,24 @@ def URLtoHTML(url):
 
 def htmlToViewCount(html:str):
     viewCountpattern = r'"view_count[s]?":\s*(\d+)\s*}'  # Matches e.g., "view_count": 1200}
-    viewCountList = re.findall(viewCountpattern, html, re.IGNORECASE)
-    viewCount = str(viewCountList[0])
+    try:
+        viewCountList = re.findall(viewCountpattern, html, re.IGNORECASE)
+        viewCount = str(viewCountList[0])
+        
+    except Exception as e:
+        print(e)
+        print("cannot find view count.")
     return viewCount
 
+
 if __name__ == "__main__":
-    test_data = scrape_thread("https://www.threads.com/search?q=%E9%98%BFbob&filter=recent","bob")
-    print(test_data)
+    test_data = scrape_thread("https://www.threads.net/@cheer4kaho_ocha/post/DQTm4rvD1Jk","洪嘉豪")
+    viewCount = test_data["thread"]["viewCount"]
+    print(viewCount)
+    #print(test_data)
+    #viewCount = 12
+    #print(isinstance(viewCount,int))
+
     
 
     #html = URLtoHTML("https://www.threads.com/@waikuen1997/post/DQA5dABCeBn")

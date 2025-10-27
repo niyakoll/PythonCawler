@@ -13,7 +13,7 @@ import getCurrentTime
 import math
 import os
 import filter 
-
+import re
 #Get setting from manifest json file
 client = []
 hour_range = 2
@@ -55,7 +55,7 @@ tempStorge7 = []
 tempStorge8 = []
 tempStorge9 = []
 tempStorge10 = []
-def parse_thread(data: Dict,keyword:str) -> Dict:
+def parse_thread(data: Dict,keyword:str,viewCount) -> Dict:
     """Parse Twitter tweet JSON dataset for the most important fields"""
     result = jmespath.search(
         """{
@@ -73,6 +73,7 @@ def parse_thread(data: Dict,keyword:str) -> Dict:
         keyword: post.like_count,
         direct_reply_count: post.text_post_app_info.direct_reply_count,
         like_count: post.like_count,
+        viewCount:post.like_count,
         images: post.carousel_media[].image_versions2.candidates[1].url,
         image_count: post.carousel_media_count,
         videos: post.video_versions[].url
@@ -81,7 +82,7 @@ def parse_thread(data: Dict,keyword:str) -> Dict:
         data,
     )
     result["videos"] = list(set(result["videos"] or []))
-    
+    result["viewCount"] = viewCount
         
         
         #result["reply_count"] = int(result["reply_count"].split(" ")[0])
@@ -115,7 +116,16 @@ def hourDifferent(postTimeStamp)->int:
         timeDifferentHour = 24
     #print(timeDifferentHour)
     return timeDifferentHour
-
+def htmlToViewCount(html:str):
+    viewCountpattern = r'"view_count[s]?":\s*(\d+)\s*}'  # Matches e.g., "view_count": 1200}
+    try:
+        viewCountList = re.findall(viewCountpattern, html, re.IGNORECASE)
+        viewCount = str(viewCountList[0])
+        
+    except Exception as e:
+        print(e)
+        print("cannot find view count.")
+    return viewCount
 def scrape_thread(url: str,thread_keyword) -> dict:
     """Scrape Threads post and replies from a given URL"""
     
@@ -136,6 +146,8 @@ def scrape_thread(url: str,thread_keyword) -> dict:
 
         # go to url and wait for the page to load
         page.goto(url)
+        viewCount = ""
+        #viewCount = htmlToViewCount(page.content())
         # wait for page to finish loading
         page.wait_for_selector("[data-pressable-container=true]")
         # find all hidden datasets
@@ -173,7 +185,7 @@ def scrape_thread(url: str,thread_keyword) -> dict:
             #print(f"After json loads and nested lookup thread_items, there are total :{len(testHiddenSet3)} hidden sets.")
 
             # use our jmespath parser to reduce the dataset to the most important fields
-            threads = [parse_thread(t,thread_keyword) for thread in thread_items for t in thread]
+            threads = [parse_thread(t,thread_keyword,viewCount) for thread in thread_items for t in thread]
             
             
             return {

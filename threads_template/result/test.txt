@@ -69,3 +69,73 @@ Traceback (most recent call last):
     time.sleep(wait_time - 7)
     ~~~~~~~~~~^^^^^^^^^^^^^^^
 ValueError: sleep length must be non-negative
+now second is 58, opentime is 2, waiting time is 1, close time is 79
+In 1 Seconds WhatsApp will open and after 1 Seconds Message will be Delivered!
+Exception in thread Thread-47 (openWhatsapp):
+Traceback (most recent call last):
+  File "C:\Users\Guest_\AppData\Local\Programs\Python\Python313\Lib\threading.py", line 1043, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "C:\Users\Guest_\AppData\Local\Programs\Python\Python313\Lib\threading.py", line 994, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Alex\ListeningTool\github\threads_template\sendWhatsapp.py", line 56, in openWhatsapp
+    pwk.sendwhatmsg_to_group(targetGroup, " ",time_hour=hour, time_min=minute+1, wait_time=waitTime, tab_close=True, close_time=closeTime)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Guest_\AppData\Local\Programs\Python\Python313\Lib\site-packages\pywhatkit\whats.py", line 111, in sendwhatmsg_to_group
+    core.send_message(message=message, receiver=group_id, wait_time=wait_time)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Guest_\AppData\Local\Programs\Python\Python313\Lib\site-packages\pywhatkit\core\core.py", line 65, in send_message
+    time.sleep(wait_time - 7)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^
+ValueError: sleep length must be non-negative
+
+now second is 56, opentime is 4, waiting time is 3, close time is 77
+In 1 Seconds WhatsApp will open and after 3 Seconds Message will be Delivered!
+Exception in thread Thread-215 (openWhatsapp):
+Traceback (most recent call last):
+  File "C:\Users\Guest_\AppData\Local\Programs\Python\Python313\Lib\threading.py", line 1043, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "C:\Users\Guest_\AppData\Local\Programs\Python\Python313\Lib\threading.py", line 994, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Alex\ListeningTool\github\threads_template\sendWhatsapp.py", line 56, in openWhatsapp
+    pwk.sendwhatmsg_to_group(targetGroup, " ",time_hour=hour, time_min=minute+1, wait_time=waitTime, tab_close=True, close_time=closeTime)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Guest_\AppData\Local\Programs\Python\Python313\Lib\site-packages\pywhatkit\whats.py", line 111, in sendwhatmsg_to_group
+    core.send_message(message=message, receiver=group_id, wait_time=wait_time)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Guest_\AppData\Local\Programs\Python\Python313\Lib\site-packages\pywhatkit\core\core.py", line 65, in send_message
+    time.sleep(wait_time - 7)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^
+ValueError: sleep length must be non-negative
+
+
+#update record with existing id
+    updatePostInfo(df,
+                    id="3747507342763244724_68163591692",
+                    keyword="",
+                    text="阿bob唱歌好好聽",
+                    replyCount=1000,
+                    likeCount=990,
+                    link="https://www.threads.com/@missmuthk/post/DQCFAEQE34R",
+                    datetime="10-14-2025 10:12:23 HKT",
+                    recordTime="10-14-2025 15:02:52 HKT",
+                    type="post")
+
+#add one record
+    appendRecord(filename=filename,
+                 workbook=workbook,
+                 sheet=sheet,
+                id="3747507342763244724_68163591692",
+                keyword="",
+                text="鬼知咩",
+                replyCount=1000,
+                likeCount=990,
+                link="https://www.threads.com/@missmuthk/post/DQCFAEQE34R",
+                datetime="10-14-2025 10:12:23 HKT",
+                recordTime="10-14-2025 15:02:52 HKT",
+                type="reply")
+
+                

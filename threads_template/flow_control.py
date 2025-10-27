@@ -91,7 +91,7 @@ def packAllScanner():
     #Distribute("TVB","GCkNXoXxIL31cpfhwN9NSO")
     #Distribute("楊老闆","D5pbC6ipk3G3NMVMWOFA2f")
     #Distribute("華納","BxWKGp5kMCf9m50ypl1VDa")
-    Distribute("親愛的BOB","ERiHadsFxk91XroB2Vyvdz")
+    Distribute("親愛的BOB","EOVBEB7keJIFddIOuwREjW")
     #test whatsapp group : LZTI3ZH7xkq3Nm9zoZyohX
     #Distribute("親愛的BOB","LZTI3ZH7xkq3Nm9zoZyohX")
     now = result_text_cleaning.timestampConvert(time.time())

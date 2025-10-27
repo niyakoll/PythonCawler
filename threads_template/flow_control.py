@@ -10,121 +10,112 @@ import ai_agent
 import os
 from itertools import chain
 #Get setting from manifest json file
-client = ""
-keyword_list = []
-interval = 30
-target_path = ""
-light_scan_mode = False
-target_whatsapp_group = ""
+client = []
+interval = 15
 ai_agent_api_key = ""
 ai_model = []
 proxies = []
-
 path = str(os.path.join(os.path.dirname(__file__),"manifest.json"))
 with open(path, 'r',encoding="utf-8") as file:
     manifest = json.load(file)
     client = manifest["client"]
-    keyword_list = manifest["keyword_list"]
     interval = manifest["interval"]
-    target_path = manifest["target_path"]
-    light_scan_mode = manifest["light_scan_mode"]
-    target_whatsapp_group = manifest["target_whatsapp_group"]
     ai_agent_api_key = manifest["ai_agent_api_key"]
     ai_model = manifest["ai_model"]
     proxies = manifest["proxies"]
-
-
-
+#scrap data from thread, call another module - threads_main
 def startScanning():
     keyword_list_main = combineList()
     print(keyword_list_main)
     threads_main.scan(keyword_list_main)
 
-def Distribute(clientName,targetWhatsappGroup):
+#After scraping data from thread, distribute data to the right client
+def Distribute(clientName,targetWhatsappGroup,whapi_group_id):
     aiText = ""
     result = ""
     recentPostList= ""
+    #cleaning data by calling another module - result_text_cleaning
     result += result_text_cleaning.formatText(f"searchResult",clientName)
     recentPostList += result_text_cleaning.postList(f"searchResult",clientName)
-    
-    with open(f"C:/Users/Alex/ListeningTool/github/threads_template/result/{clientName}PostListOutput.txt","w",encoding="utf-8") as f:
+    #write clean result to a text file for debug session
+    PostListpath = str(os.path.join(os.path.dirname(__file__),"result",f"{clientName}PostListOutput.txt"))
+    AiOutputpath = str(os.path.join(os.path.dirname(__file__),"result",f"{clientName}AIOutput.txt"))
+    with open(PostListpath,"w",encoding="utf-8") as f:
         f.write(recentPostList)
-    with open(f"C:/Users/Alex/ListeningTool/github/threads_template/result/{clientName}AIOutput.txt","w",encoding="utf-8") as f:
+    with open(AiOutputpath,"w",encoding="utf-8") as f:
         f.write(result)
-    
+    #check if the clean result contain content, if yes , pass to ai and send whatsapp message, if not, send remind message.    
     if len(result) > 15:
         try:
             now = result_text_cleaning.timestampConvert(time.time())
             aiText = ai_agent.callAI(result)
-            sendWhatsapp.sendMessage(f"{clientName} 你好!\n{aiText}",recentPostList,targetWhatsappGroup)
-            #print("have thing")
+            response  = sendWhatsapp.whapi_sendMessage(f"{clientName} 你好!\n{aiText}\n{recentPostList}",whapi_group_id)
+            if response["error"]["code"] != 200:
+                sendWhatsapp.sendMessage(f"{clientName} 你好!\n{aiText}",recentPostList,targetWhatsappGroup)
         except Exception as e:
+            #sendWhatsapp.sendMessage(f"{clientName} 你好!\n{aiText}",recentPostList,targetWhatsappGroup)
             print(e)
     else:
-        now = result_text_cleaning.timestampConvert(time.time())
-        print(f"{now} , Found no Post for {clientName}.")
-        sendWhatsapp.sendMessage(f"{clientName} 你好!\n{now} 暫時未找到新的帖文。","",targetWhatsappGroup)
-        #print("nothing!")
+        try:
+            now = result_text_cleaning.timestampConvert(time.time())
+            print(f"{now} , Found no Post for {clientName}.")
+            response = sendWhatsapp.whapi_sendMessage(f"{clientName} 你好!\n{now} 暫時未找到新的帖文。",whapi_group_id)
+            if response["error"]["code"] != 200:
+                sendWhatsapp.sendMessage(f"{clientName} 你好!\n{now} 暫時未找到新的帖文。","",targetWhatsappGroup)
+        except Exception as e:
+            #sendWhatsapp.sendMessage(f"{clientName} 你好!\n{now} 暫時未找到新的帖文。","",targetWhatsappGroup)
+            print(e)
 
-"""
-    with open(target_path+f"{clientName}ai.txt","w",encoding="utf-8") as f:
-        f.write(result)
-    with open(target_path+f"{clientName}postList.txt","w",encoding="utf-8") as f:
-        f.write(recentPostList)
-
-
-
-    #if result != "":
-        #aiText = ai_agent.callAI(result)
-    #else:
-        #aiText = "暫時未有找到更多相關帖文..."
-    #sendWhatsapp.sendMessage(aiText,target_whatsapp_group[0])
-    
-
-    #sendWhatsapp.sendMessage(aiText,recentPostList,targetGroup)
-
-    #print(targetGroup)
-"""
-
+#pack all process into one function for better management
 def packAllScanner():
     startScanning()
-    #Distribute("TVB","GCkNXoXxIL31cpfhwN9NSO")
-    #Distribute("楊老闆","D5pbC6ipk3G3NMVMWOFA2f")
-    #Distribute("華納","BxWKGp5kMCf9m50ypl1VDa")
-    Distribute("親愛的BOB","EOVBEB7keJIFddIOuwREjW")
-    #test whatsapp group : LZTI3ZH7xkq3Nm9zoZyohX
-    #Distribute("親愛的BOB","LZTI3ZH7xkq3Nm9zoZyohX")
+    OutputResult()
     now = result_text_cleaning.timestampConvert(time.time())
     print(f"{now} : Whole Process Finished.")
 
-def test_schedule():
-    currentTime = getCurrentTime.getCurrentTime()
-    print(f"{currentTime['hour']}:{currentTime['minute']}:{currentTime['second']} running!")
-def combineList()->list:
-    allKeyword = []
-    try:
-        merge = list(chain.from_iterable([list(client.values()) for client in keyword_list]))
-        for cList in merge:
-             allKeyword.extend(cList)
-        #print(allKeyword)   
-    except Exception as e:
-        print(f"{e}\nCombine List Error!")
-    finally:
-        return allKeyword
+#get keyword list from manifest json and combine all keywork list from different client into one list for scraping
+def combineList():
+    clientList = []
+    keyword_list_main = []
+    path = str(os.path.join(os.path.dirname(__file__),"manifest.json"))
+    with open(path, 'r',encoding="utf-8") as file:
+        manifest = json.load(file)
+        clientList = manifest["client"]
+        client_panel = manifest["client_panel"]
+        for client in clientList:
+            if client_panel[client]["run"] == False:
+                continue
+            keyword_list_main.extend(client_panel[client]["keyword"])    
+    return keyword_list_main
 
-if __name__ == "__main__":
+#run all client that are active(true)
+def OutputResult():
+    clientList = []
     
     try:
-        #print(combineList())
+        path = str(os.path.join(os.path.dirname(__file__),"manifest.json"))
+        with open(path, 'r',encoding="utf-8") as file:
+            manifest = json.load(file)
+            clientList = manifest["client"]
+            client_panel = manifest["client_panel"]
+            for client in clientList:
+                if client_panel[client]["run"] == False:
+                    continue
+                target_whatsapp_group = client_panel[client]["target_whatsapp_group"]
+                whapi_group_id = client_panel[client]["whapi_group_id"]
+                Distribute(client,target_whatsapp_group,whapi_group_id)
+    except Exception as e:
+        print(e)
+if __name__ == "__main__":
+    try:
+        #directly run the whole program when click run 
         packAllScanner()
-        
+        #schedule the whole program run every {interval}(refer to manifest json setting) minutes.
         schedule.every(interval).minutes.do(packAllScanner)
     except Exception as e:
         print(f"{e}")
-
     while True:
-    #Checks whether a scheduled task 
-    #is pending to run or not
+    #Checks whether a scheduled task is pending to run or not, keep running whole program.
         schedule.run_pending()
         time.sleep(1)
         

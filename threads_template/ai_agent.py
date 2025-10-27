@@ -4,12 +4,12 @@ import result_text_cleaning
 import time
 import os
 #Get setting from manifest json file
-client = ""
-keyword_list = []
+#client = ""
+#keyword_list = []
 interval = 30
-target_path = ""
-light_scan_mode = False
-target_whatsapp_group = ""
+#target_path = ""
+#light_scan_mode = False
+#target_whatsapp_group = ""
 ai_agent_api_key = ""
 ai_model = []
 proxies = []
@@ -20,9 +20,6 @@ with open(path, 'r',encoding="utf-8") as file:
     MarketingClient = manifest["client"]
     keyword_list = manifest["keyword_list"]
     interval = manifest["interval"]
-    target_path = manifest["target_path"]
-    light_scan_mode = manifest["light_scan_mode"]
-    target_whatsapp_group = manifest["target_whatsapp_group"]
     ai_agent_api_key = manifest["ai_agent_api_key"]
     ai_model = manifest["ai_model"]
     proxies = manifest["proxies"]

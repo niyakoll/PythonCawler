@@ -7,6 +7,18 @@ import threading
 import getCurrentTime
 import result_text_cleaning
 from datetime import datetime
+import requests
+import json
+import os
+
+whapi_token = ""
+whapi_api_url = ""
+path = str(os.path.join(os.path.dirname(__file__),"manifest.json"))
+with open(path, 'r',encoding="utf-8") as file:
+    manifest = json.load(file)
+    whapi_token = manifest["whapi_token"]
+    whapi_api_url = manifest["whapi_api_url"]
+
 def directPasteAndSend(input:str):
     pyperclip.copy(input)
     time.sleep(1)
@@ -84,5 +96,25 @@ def sendMessage(outputText,postListMessage,targetGroup):
     t2.join()
     print(f"Date: {year}-{month:02d}-{day:02d}, Time: {hour:02d}:{minute:02d}:{second:02d} Successfully Send Whatsapp Message!")
 
-#use case example
-#sendMessage("我是測試信息","Testing!","LZTI3ZH7xkq3Nm9zoZyohX")
+def whapi_sendMessage(message,whapi_group_id):
+    
+
+    url = f"{whapi_api_url}messages/text"
+
+    payload = {
+        "typing_time": 0,
+        "to": whapi_group_id,
+        "no_link_preview": False,
+        "wide_link_preview": False,
+        "body": message
+    }
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "authorization": f"Bearer {whapi_token}"
+    }
+
+    response = requests.post(url, json=payload, headers=headers)
+
+    print(response.text)
+

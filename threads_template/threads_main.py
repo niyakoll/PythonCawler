@@ -15,29 +15,15 @@ import os
 import filter 
 
 #Get setting from manifest json file
-client = ""
-keyword_list = []
+client = []
 hour_range = 2
-interval = 30
-target_path = ""
-light_scan_mode = False
-target_whatsapp_group = ""
-ai_agent_api_key = ""
-ai_model = []
 proxies = []
 proxies_api_key = ""
 path = str(os.path.join(os.path.dirname(__file__),"manifest.json"))
 with open(path, 'r',encoding="utf-8") as file:
     manifest = json.load(file)
     client = manifest["client"]
-    keyword_list = manifest["keyword_list"]
     hour_range = manifest['hour_range']
-    interval = manifest["interval"]
-    target_path = manifest["target_path"]
-    light_scan_mode = manifest["light_scan_mode"]
-    target_whatsapp_group = manifest["target_whatsapp_group"]
-    ai_agent_api_key = manifest["ai_agent_api_key"]
-    ai_model = manifest["ai_model"]
     proxies = manifest["proxies"]
     proxies_api_key = manifest["proxies_api_key"]
 
@@ -234,11 +220,7 @@ def find_hidden_comment(post:Dict,thread_keyword,tempStorge):
                 username = reply["username"]
                 code = reply["code"]
                 text = reply["text"]
-            #print(f"this comment {text} has {direct_reply_count} replies")
-            #print(username)
-            #print(code)
                 url =f"https://www.threads.com/@{username}/post/{code}"
-                #print(url)
                 add_hidden_comment(url,thread_keyword,tempStorge)
     except ValueError as e:
         print(f"Error in find_hidden_comment function: {e}")
@@ -344,8 +326,6 @@ def search_multiple_keyword(all_keyword_list:list,file_path,tempStorge)->dict:
                 print(f"Error scraping keyword {keyword}: {e}")
                 continue
             try:
-                if light_scan_mode == True:
-                    url_list = url_list[:10]
                 search_one_keyword_all_comment(url_list,keyword,tempStorge)
             except ValueError as e:
                 print(f"Error scraping all comments for keyword {keyword}: {e}")
@@ -366,16 +346,16 @@ def scan(keyword_list_main):
     print(f"{currentTime} : Distributing Keyword...")
     t = ThreadDistribue(keyword_list_main)
     print(f"Total of {len(keyword_list_main)} keywords, each thread scans {len(t["t1"])} keywords...")
-    t1 = threading.Thread(target=search_multiple_keyword, args=(t["t1"],target_path+f"searchResult1.json",tempStorge1))
-    t2 = threading.Thread(target=search_multiple_keyword, args=(t["t2"],target_path+f"searchResult2.json",tempStorge2))
-    t3 = threading.Thread(target=search_multiple_keyword, args=(t["t3"],target_path+f"searchResult3.json",tempStorge3))
-    t4 = threading.Thread(target=search_multiple_keyword, args=(t["t4"],target_path+f"searchResult4.json",tempStorge4))
-    t5 = threading.Thread(target=search_multiple_keyword, args=(t["t5"],target_path+f"searchResult5.json",tempStorge5))
-    t6 = threading.Thread(target=search_multiple_keyword, args=(t["t6"],target_path+f"searchResult6.json",tempStorge6))
-    t7 = threading.Thread(target=search_multiple_keyword, args=(t["t7"],target_path+f"searchResult7.json",tempStorge7))
-    t8 = threading.Thread(target=search_multiple_keyword, args=(t["t8"],target_path+f"searchResult8.json",tempStorge8))
-    t9 = threading.Thread(target=search_multiple_keyword, args=(t["t9"],target_path+f"searchResult9.json",tempStorge9))
-    t10 = threading.Thread(target=search_multiple_keyword, args=(t["t10"],target_path+f"searchResult10.json",tempStorge10))
+    t1 = threading.Thread(target=search_multiple_keyword, args=(t["t1"],str(os.path.join(os.path.dirname(__file__),"result","searchResult1.json")),tempStorge1))
+    t2 = threading.Thread(target=search_multiple_keyword, args=(t["t2"],str(os.path.join(os.path.dirname(__file__),"result","searchResult2.json")),tempStorge2))
+    t3 = threading.Thread(target=search_multiple_keyword, args=(t["t3"],str(os.path.join(os.path.dirname(__file__),"result","searchResult3.json")),tempStorge3))
+    t4 = threading.Thread(target=search_multiple_keyword, args=(t["t4"],str(os.path.join(os.path.dirname(__file__),"result","searchResult4.json")),tempStorge4))
+    t5 = threading.Thread(target=search_multiple_keyword, args=(t["t5"],str(os.path.join(os.path.dirname(__file__),"result","searchResult5.json")),tempStorge5))
+    t6 = threading.Thread(target=search_multiple_keyword, args=(t["t6"],str(os.path.join(os.path.dirname(__file__),"result","searchResult6.json")),tempStorge6))
+    t7 = threading.Thread(target=search_multiple_keyword, args=(t["t7"],str(os.path.join(os.path.dirname(__file__),"result","searchResult7.json")),tempStorge7))
+    t8 = threading.Thread(target=search_multiple_keyword, args=(t["t8"],str(os.path.join(os.path.dirname(__file__),"result","searchResult8.json")),tempStorge8))
+    t9 = threading.Thread(target=search_multiple_keyword, args=(t["t9"],str(os.path.join(os.path.dirname(__file__),"result","searchResult9.json")),tempStorge9))
+    t10 = threading.Thread(target=search_multiple_keyword, args=(t["t10"],str(os.path.join(os.path.dirname(__file__),"result","searchResult10.json")),tempStorge10))
     t1.start()
     t2.start()
     t3.start()
@@ -401,14 +381,9 @@ def scan(keyword_list_main):
     t10.join()
     currentTime = result_text_cleaning.timestampConvert(time.time())
     print(f"{currentTime} : Scanning Finished.")
-    
-def test_schedule():
-    print("running!")
 
-
-def ThreadDistribue(keyword_list_main):
-    #print(keyword_list)
-    #totalKeyword = len(keyword_list)
+#seperate the keywork list and distribute equally to each thread(total ten threads)    
+def ThreadDistribue(keyword_list_main): 
     totalKeyword = len(keyword_list_main)
     keywordPerThread = 0
     lastThread = 0
@@ -416,7 +391,6 @@ def ThreadDistribue(keyword_list_main):
         keywordPerThread = int(totalKeyword/10)
     else:
         keywordPerThread = math.floor(totalKeyword/9)
-        #lastThread = math.ceil(totalKeyword%7)
     threadKeywordList = {"t1":keyword_list_main[:keywordPerThread],
                          "t2":keyword_list_main[keywordPerThread:keywordPerThread*2],
                          "t3":keyword_list_main[keywordPerThread*2:keywordPerThread*3],
@@ -430,90 +404,4 @@ def ThreadDistribue(keyword_list_main):
                          }
     return threadKeywordList
 
-#if __name__ == "__main__":
-      
-        
-
-
-
-
-#if __name__ == "__main__":
-    #l = keyword_list[2]["華納"]
-    #print(l)
-#print(past)
-
-#print(f"{postHour}\n{postMinute}\n{postSecond}")
-#test_search = scrape_thread("https://www.threads.com/search?q=%E5%BC%B5%E5%A4%A9%E8%B3%A6&serp_type=recent")
-#print(test_search)
-#writeJson(r"C:/Users/Alex/threadSearchOutput.json",test_search)
-
-"""
-    numberOfScan = 0
-    try:
-        while numberOfScan < 30:
-            schedule.every(30).minutes.do(scan())
-            numberOfScan+=1
-    except:
-        print("crash!")
-
-keywordTestList = ["容祖兒","joey","joey yung","張敬軒","軒公","軒少","軒仔","Hins Cheung","張寧","古巨基","古Sir","古仔","謝霆鋒","鋒味","謝檸檬","曾傲棐","許靖韻","VIVA","英皇","姜咏鑫","李晞彤","馬思惠","張鈊貽","李幸倪","Gin Lee","楊千嬅"]
-    threadKeywordList = ThreadDistribue(keywordTestList)
-    print(threadKeywordList["t1"])
-    print(threadKeywordList["t2"])
-    print(threadKeywordList["t3"])
-    print(threadKeywordList["t4"])
-    print(threadKeywordList["t5"])
-    print(threadKeywordList["t6"])
-    print(threadKeywordList["t7"])
-    print(threadKeywordList["t8"])
-
-d = hourDifferent(1760407013)
-t = hourDifferent(time.time())
-today = result_text_cleaning.timestampConvert(time.time())
-past  = result_text_cleaning.timestampConvert(1760407013)
-print(d)
-print(t)
-print(today)
-print(past)
-if d > hour_range:
-    print(f"This Post was published over {hour_range} hours!")
-else:
-    print("OK!")
-
-
-    #d = hourDifferent(1760360246)
-    #t = hourDifferent(time.time())
-    now = result_text_cleaning.timestampConvert(time.time())
-    postTime  = result_text_cleaning.timestampConvert(1760360246)
-    postyear = int(postTime[:4])
-    postMonth = int(postTime[5:7])
-    postDay = int(postTime[8:10])
-    postHour = int(postTime[11:13])
-    postMinute = int(postTime[14:16])
-    postSecond = int(postTime[17:19])
-    nowYear = int(now[:4])
-    nowMonth = int(now[5:7])
-    nowDay = int(now[8:10])
-    nowHour = int(now[11:13])
-    nowMinute = int(now[14:16])
-    nowSecond = int(now[17:19])
-    publishDay = datetime(year = postyear, month = postMonth, day = postDay,hour=postHour,minute= postMinute,second= nowSecond)
-    today = datetime(year = nowYear, month= nowMonth, day= nowDay,hour=nowHour,minute= nowMinute, second= postSecond)
-    print((today-publishDay).days)
-    print(int((((today-publishDay).seconds)/60)/60))
-    if (today-publishDay).days != 0:
-        timeDifferentHour = 24
-    elif (today-publishDay).days == 0:
-        timeDifferentHour = int((((today-publishDay).seconds)/60)/60)
-    else:
-        timeDifferentHour = 24
-    
-    if timeDifferentHour > hour_range:
-        print(f"This Post was published over {hour_range} hours!")
-    else:
-        print("OK!")
-
-    n = math.ceil(4.22)
-    print(n)
-    """
-        
+#if __name__ == "__main__":        

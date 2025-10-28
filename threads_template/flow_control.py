@@ -55,7 +55,7 @@ def Distribute(clientName,targetWhatsappGroup,whapi_group_id):
             #if response["error"]["code"] != 200:
                 #sendWhatsapp.sendMessage(f"{clientName} 你好!\n{aiText}",recentPostList,targetWhatsappGroup)
         except Exception as e:
-            #sendWhatsapp.sendMessage(f"{clientName} 你好!\n{aiText}",recentPostList,targetWhatsappGroup)
+            sendWhatsapp.sendMessage(f"{clientName} 你好!\n{aiText}",recentPostList,targetWhatsappGroup)
             print(e)
     else:
         try:
@@ -64,7 +64,7 @@ def Distribute(clientName,targetWhatsappGroup,whapi_group_id):
             
             response = sendWhatsapp.whapi_sendMessage(f"{clientName} 你好!\n{now} 暫時未找到新的帖文。",whapi_group_id)
             if response["error"]["code"] != 200:
-                sendWhatsapp.sendMessage(f"{clientName} 你好!\n{now} 暫時未找到新的帖文。","",targetWhatsappGroup)
+                sendWhatsapp.sendMessage(f"{clientName} 你好!\n{now} Threads暫時未找到新的帖文。","",targetWhatsappGroup)
         except Exception as e:
             #sendWhatsapp.sendMessage(f"{clientName} 你好!\n{now} 暫時未找到新的帖文。","",targetWhatsappGroup)
             print(e)
@@ -119,7 +119,6 @@ def OutputResult():
         print(e)
 if __name__ == "__main__":
     try:
-        
         #directly run the whole program when click run 
         packAllScanner()
         #schedule the whole program run every {interval}(refer to manifest json setting) minutes.

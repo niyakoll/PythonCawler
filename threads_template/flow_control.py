@@ -50,6 +50,7 @@ def Distribute(clientName,targetWhatsappGroup,whapi_group_id):
             now = result_text_cleaning.timestampConvert(time.time())
             aiText = ai_agent.callAI(result)
             sendWhatsapp.whapi_sendToClient(ai_message=aiText,postListMessage=recentPostList,whapi_group_id=whapi_group_id)
+            
             #response  = sendWhatsapp.whapi_sendMessage(f"{clientName} 你好!\n{aiText}\n{recentPostList}",whapi_group_id)
             #if response["error"]["code"] != 200:
                 #sendWhatsapp.sendMessage(f"{clientName} 你好!\n{aiText}",recentPostList,targetWhatsappGroup)
@@ -60,6 +61,7 @@ def Distribute(clientName,targetWhatsappGroup,whapi_group_id):
         try:
             now = result_text_cleaning.timestampConvert(time.time())
             print(f"{now} , Found no Post for {clientName}.")
+            
             response = sendWhatsapp.whapi_sendMessage(f"{clientName} 你好!\n{now} 暫時未找到新的帖文。",whapi_group_id)
             if response["error"]["code"] != 200:
                 sendWhatsapp.sendMessage(f"{clientName} 你好!\n{now} 暫時未找到新的帖文。","",targetWhatsappGroup)
@@ -122,7 +124,7 @@ if __name__ == "__main__":
         packAllScanner()
         #schedule the whole program run every {interval}(refer to manifest json setting) minutes.
         schedule.every(interval).minutes.do(packAllScanner)
-        schedule.every(90).minutes.do(clearRecord())
+        #schedule.every(90).minutes.do(clearRecord())
     except Exception as e:
         print(f"{e}")
     while True:

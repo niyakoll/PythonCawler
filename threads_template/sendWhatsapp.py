@@ -116,7 +116,7 @@ def whapi_sendMessage(message,whapi_group_id):
 
     response = requests.post(url, json=payload, headers=headers)
 
-    print(response.text)
+    #print(response.text)
 
 def whapi_sendToClient(ai_message,postListMessage,whapi_group_id):
     whapi_sendMessage(ai_message,whapi_group_id)

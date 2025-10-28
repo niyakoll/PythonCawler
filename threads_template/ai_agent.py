@@ -18,7 +18,6 @@ path = str(os.path.join(os.path.dirname(__file__),"manifest.json"))
 with open(path, 'r',encoding="utf-8") as file:
     manifest = json.load(file)
     MarketingClient = manifest["client"]
-    keyword_list = manifest["keyword_list"]
     interval = manifest["interval"]
     ai_agent_api_key = manifest["ai_agent_api_key"]
     ai_model = manifest["ai_model"]

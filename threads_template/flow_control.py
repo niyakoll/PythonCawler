@@ -1,14 +1,13 @@
 import threads_main
 import sendWhatsapp
-import getCurrentTime
+import result_text_cleaning
+import ai_agent
 import json
 import threading
 import time
 import schedule
-import result_text_cleaning
-import ai_agent
 import os
-from itertools import chain
+
 #Get setting from manifest json file
 client = []
 interval = 15
@@ -35,8 +34,14 @@ def Distribute(clientName,targetWhatsappGroup,whapi_group_id):
     result = ""
     recentPostList= ""
     #cleaning data by calling another module - result_text_cleaning
-    result += result_text_cleaning.formatText(f"searchResult",clientName)
-    recentPostList += result_text_cleaning.postList(f"searchResult",clientName)
+    try:
+        result += result_text_cleaning.formatText(f"searchResult",clientName)
+    except Exception as e:
+        print(e)
+    try:
+        recentPostList += result_text_cleaning.postList(f"searchResult",clientName)
+    except Exception as e:
+        print(e)
     #write clean result to a text file for debug session
     PostListpath = str(os.path.join(os.path.dirname(__file__),"result",f"{clientName}PostListOutput.txt"))
     AiOutputpath = str(os.path.join(os.path.dirname(__file__),"result",f"{clientName}AIOutput.txt"))
@@ -45,7 +50,7 @@ def Distribute(clientName,targetWhatsappGroup,whapi_group_id):
     with open(AiOutputpath,"w",encoding="utf-8") as f:
         f.write(result)
     #check if the clean result contain content, if yes , pass to ai and send whatsapp message, if not, send remind message.    
-    if len(result) > 15:
+    if len(recentPostList) > 15:
         try:
             now = result_text_cleaning.timestampConvert(time.time())
             aiText = ai_agent.callAI(result)
@@ -62,17 +67,21 @@ def Distribute(clientName,targetWhatsappGroup,whapi_group_id):
             now = result_text_cleaning.timestampConvert(time.time())
             print(f"{now} , Found no Post for {clientName}.")
             
-            response = sendWhatsapp.whapi_sendMessage(f"{clientName} 你好!\n{now} 暫時未找到新的帖文。",whapi_group_id)
-            if response["error"]["code"] != 200:
-                sendWhatsapp.sendMessage(f"{clientName} 你好!\n{now} Threads暫時未找到新的帖文。","",targetWhatsappGroup)
+            response = sendWhatsapp.whapi_sendMessage(f"{clientName} 你好!\n{now} \nThreads暫時未找到新的帖文。",whapi_group_id)
+            #if response["error"]["code"] != 200:
+                #sendWhatsapp.sendMessage(f"{clientName} 你好!\n{now} \nThreads暫時未找到新的帖文。","",targetWhatsappGroup)
         except Exception as e:
             #sendWhatsapp.sendMessage(f"{clientName} 你好!\n{now} 暫時未找到新的帖文。","",targetWhatsappGroup)
             print(e)
 
 #pack all process into one function for better management
 def packAllScanner():
+    startTime = time.time()
     startScanning()
     OutputResult()
+    endTime = time.time()
+    wholeProcessTime = (endTime - startTime)/60
+    print(f"Whole Process Time: {wholeProcessTime} minutes.")
     now = result_text_cleaning.timestampConvert(time.time())
     print(f"{now} : Whole Process Finished.")
 
@@ -102,9 +111,11 @@ def clearRecord():
 #run all client that are active(true)
 def OutputResult():
     clientList = []
+    AllClientFinalOutput = {}
+    path = str(os.path.join(os.path.dirname(__file__),"manifest.json"))
     
     try:
-        path = str(os.path.join(os.path.dirname(__file__),"manifest.json"))
+        
         with open(path, 'r',encoding="utf-8") as file:
             manifest = json.load(file)
             clientList = manifest["client"]
@@ -115,19 +126,49 @@ def OutputResult():
                 target_whatsapp_group = client_panel[client]["target_whatsapp_group"]
                 whapi_group_id = client_panel[client]["whapi_group_id"]
                 Distribute(client,target_whatsapp_group,whapi_group_id)
+                try:
+                    with open(str(os.path.join(os.path.dirname(__file__),"result",f"finalOutput.json")), 'r',encoding="utf-8") as file:
+                        clientFinalOutput = json.load(file)
+                        AllClientFinalOutput[client] = clientFinalOutput
+                except Exception as e:
+                    print(e)
+                try:
+                    with open(str(os.path.join(os.path.dirname(__file__),"result",f"AllClientFinalOutput.json")), 'w',encoding="utf-8") as file:
+                        json.dump(AllClientFinalOutput, file, indent=4,ensure_ascii=False)  # indent for pretty-printing
+                        print("Final Output saved.")
+                except Exception as e:
+                    print(e)
     except Exception as e:
         print(e)
+def setupJsonFile():
+    initalJson = {}
+    path = str(os.path.join(os.path.dirname(__file__),"manifest.json"))
+    with open(path, 'r',encoding="utf-8") as file:
+            manifest = json.load(file)
+            clientList = manifest["client"]
+            client_panel = manifest["client_panel"]
+            for client in clientList:
+                if client_panel[client]["run"] == False:
+                    continue
+                try:
+                    with open(str(os.path.join(os.path.dirname(__file__),"result",f"{client}outputRecord.json")), 'w',encoding="utf-8") as file:
+                        json.dump(initalJson, file, indent=4,ensure_ascii=False)  # indent for pretty-printing
+                        print("Client threads record json initalised.")
+                except Exception as e:
+                    print(e)
 if __name__ == "__main__":
     try:
-        #directly run the whole program when click run 
+            #initialize json file to save threads record if not exist
+        setupJsonFile()
+            #directly run the whole program when click run 
         packAllScanner()
-        #schedule the whole program run every {interval}(refer to manifest json setting) minutes.
+            #schedule the whole program run every {interval}(refer to manifest json setting) minutes.
         schedule.every(interval).minutes.do(packAllScanner)
         #schedule.every(90).minutes.do(clearRecord())
     except Exception as e:
         print(f"{e}")
     while True:
-    #Checks whether a scheduled task is pending to run or not, keep running whole program.
+            #Checks whether a scheduled task is pending to run or not, keep running whole program.
         schedule.run_pending()
         time.sleep(1)
         

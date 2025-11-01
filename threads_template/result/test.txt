@@ -969,3 +969,121 @@ ValueError: sleep length must be non-negative
 
 1761621046.3550134
 1761621046.3550134
+{
+    "https://www.threads.net/@pantherholic.co/post/DQVYxCBElMV": {
+        "source": "Threads",
+        "postTimeStamp": 1761614248,
+        "postKeyword": "陳蕾",
+        "text": "有冇人未有澳大singcon飛？\n有事去唔到 多咗張普通位嘅飛～",
+        "postTime": "2025-10-28 09:17:28 HKT",
+        "postUrl": "https://www.threads.net/@pantherholic.co/post/DQVYxCBElMV",
+        "postLikeCount": 4,
+        "postReplyCount": 0,
+        "updateTime": 1761621321.156773
+    },
+    "https://www.threads.net/@_chill.up_/post/DQVkaKvCH_l": {
+        "source": "Threads",
+        "postTimeStamp": 1761620352,
+        "postKeyword": "湯令山",
+        "text": "有冇人30號去睇湯令山 #倫敦￼",
+        "postTime": "2025-10-28 10:59:12 HKT",
+        "postUrl": "https://www.threads.net/@_chill.up_/post/DQVkaKvCH_l",
+        "postLikeCount": 1,
+        "postReplyCount": 0,
+        "updateTime": 1761622605.9098964
+        1761623804.1939473
+    }
+}
+
+JSON file successfully created at: c:\Users\Alex\ListeningTool\github\threads_template\result\searchResult8.json
+All keywords Listening finished, total 4 Post collected.
+Total time taken: 1 minutes
+2025-10-28 12:30:23 HKT : Scanning Finished.
+2025-10-28 12:30:23 HKT : Start Cleaning Data.
+2025-10-28 12:30:23 HKT , Found no Post for 親愛的BOB.
+'NoneType' object is not subscriptable
+2025-10-28 12:30:25 HKT : Start Cleaning Data.
+https://www.threads.net/@_chill.up_/post/DQVkaKvCH_l at 2025-10-28 11:15:21 HKT
+ find a new record
+https://www.threads.net/@_chill.up_/post/DQVkaKvCH_l last update at 2025-10-28 12:30:25 HKT
+same url, no update
+https://www.threads.net/@_chill.up_/post/DQVkaKvCH_l at 2025-10-28 12:15:12 HKT
+ find a new record
+https://www.threads.net/@_chill.up_/post/DQVkaKvCH_l at 2025-10-28 12:15:12 HKT
+ find a new record
+https://www.threads.net/@_chill.up_/post/DQVkaKvCH_l at 2025-10-28 12:15:12 HKT
+ find a new record
+https://www.threads.net/@_chill.up_/post/DQVkaKvCH_l at 2025-10-28 12:15:12 HKT
+ find a new record
+https://www.threads.net/@going.withtheflow_/post/DQVp6cHEgz_ at 2025-10-28 11:15:21 HKT
+ find a new record
+https://www.threads.net/@going.withtheflow_/post/DQVp6cHEgz_ at 2025-10-28 12:30:25 HKT
+ find a new record
+https://www.threads.net/@going.withtheflow_/post/DQVp6cHEgz_ last update at 2025-10-28 12:30:25 HKT
+same url, no update
+https://www.threads.net/@going.withtheflow_/post/DQVp6cHEgz_ at 2025-10-28 12:15:12 HKT
+ find a new record
+https://www.threads.net/@going.withtheflow_/post/DQVp6cHEgz_ at 2025-10-28 12:15:12 HKT
+ find a new record
+https://www.threads.net/@going.withtheflow_/post/DQVp6cHEgz_ at 2025-10-28 12:15:12 HKT
+ find a new record
+https://www.threads.net/@going.withtheflow_/post/DQVp6cHEgz_ at 2025-10-28 11:15:21 HKT
+ find a new record
+https://www.threads.net/@going.withtheflow_/post/DQVp6cHEgz_ at 2025-10-28 12:30:25 HKT
+ find a new record
+https://www.threads.net/@going.withtheflow_/post/DQVp6cHEgz_ last update at 2025-10-28 12:30:25 HKT
+same url, no update
+https://www.threads.net/@going.withtheflow_/post/DQVp6cHEgz_ at 2025-10-28 12:15:12 HKT
+ find a new record
+https://www.threads.net/@going.withtheflow_/post/DQVp6cHEgz_ at 2025-10-28 12:15:12 HKT
+ find a new record
+https://www.threads.net/@going.withtheflow_/post/DQVp6cHEgz_ at 2025-10-28 12:15:12 HKT
+ find a new record
+https://www.threads.net/@cheer4kaho_ocha/post/DQVqvalj3mv at 2025-10-28 11:15:21 HKT
+ find a new record
+https://www.threads.net/@cheer4kaho_ocha/post/DQVqvalj3mv at 2025-10-28 12:30:25 HKT
+ find a new record
+https://www.threads.net/@cheer4kaho_ocha/post/DQVqvalj3mv at 2025-10-28 12:30:25 HKT
+ find a new record
+https://www.threads.net/@cheer4kaho_ocha/post/DQVqvalj3mv last update at 2025-10-28 12:30:25 HKT
+same url, no update
+https://www.threads.net/@cheer4kaho_ocha/post/DQVqvalj3mv at 2025-10-28 12:15:12 HKT
+ find a new record
+https://www.threads.net/@cheer4kaho_ocha/post/DQVqvalj3mv at 2025-10-28 12:15:12 HKT
+ find a new record
+https://www.threads.net/@_justforkaho.cc1024_/post/DQVrF41krxs at 2025-10-28 11:15:21 HKT
+ find a new record
+https://www.threads.net/@_justforkaho.cc1024_/post/DQVrF41krxs at 2025-10-28 12:30:25 HKT
+ find a new record
+https://www.threads.net/@_justforkaho.cc1024_/post/DQVrF41krxs at 2025-10-28 12:30:25 HKT
+ find a new record
+https://www.threads.net/@_justforkaho.cc1024_/post/DQVrF41krxs at 2025-10-28 12:30:25 HKT
+ find a new record
+https://www.threads.net/@_justforkaho.cc1024_/post/DQVrF41krxs at 2025-10-28 12:15:12 HKT
+ find a new record
+https://www.threads.net/@_justforkaho.cc1024_/post/DQVrF41krxs last update at 2025-10-28 12:30:25 HKT
+same url, no update
+https://www.threads.net/@cheer4kaho_ocha/post/DQVqvalj3mv at 2025-10-28 11:15:21 HKT
+ find a new record
+https://www.threads.net/@cheer4kaho_ocha/post/DQVqvalj3mv at 2025-10-28 12:30:25 HKT
+ find a new record
+https://www.threads.net/@cheer4kaho_ocha/post/DQVqvalj3mv at 2025-10-28 12:30:25 HKT
+ find a new record
+https://www.threads.net/@cheer4kaho_ocha/post/DQVqvalj3mv last update at 2025-10-28 12:30:25 HKT
+same url, no update
+https://www.threads.net/@cheer4kaho_ocha/post/DQVqvalj3mv at 2025-10-28 12:15:12 HKT
+ find a new record
+https://www.threads.net/@cheer4kaho_ocha/post/DQVqvalj3mv at 2025-10-28 12:30:25 HKT
+ find a new record
+https://www.threads.net/@lhaveboyfriend_527_907/post/DQVpOQ4Euue at 2025-10-28 11:15:21 HKT
+ find a new record
+https://www.threads.net/@lhaveboyfriend_527_907/post/DQVpOQ4Euue at 2025-10-28 12:30:25 HKT
+ find a new record
+https://www.threads.net/@lhaveboyfriend_527_907/post/DQVpOQ4Euue at 2025-10-28 12:30:25 HKT
+ find a new record
+https://www.threads.net/@lhaveboyfriend_527_907/post/DQVpOQ4Euue at 2025-10-28 12:30:25 HKT
+ find a new record
+https://www.threads.net/@lhaveboyfriend_527_907/post/DQVpOQ4Euue last update at 2025-10-28 12:30:25 HKT
+same url, no update
+https://www.threads.net/@lhaveboyfriend_527_907/post/DQVpOQ4Euue at 2025-10-28 12:30:25 HKT
+ find a new record

@@ -1,6 +1,6 @@
+import result_text_cleaning
 import json
 from openai import OpenAI
-import result_text_cleaning
 import time
 import os
 #Get setting from manifest json file

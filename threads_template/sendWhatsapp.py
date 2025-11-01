@@ -4,12 +4,12 @@ import time
 import pyperclip
 import pyautogui
 import threading
-import getCurrentTime
 import result_text_cleaning
 from datetime import datetime
 import requests
 import json
 import os
+import pytz
 
 whapi_token = ""
 whapi_api_url = ""
@@ -19,6 +19,31 @@ with open(path, 'r',encoding="utf-8") as file:
     whapi_token = manifest["whapi_token"]
     whapi_api_url = manifest["whapi_api_url"]
 
+def getCurrentTime()->dict:
+    currentTime = {}
+    # Get current time in Hong Kong (HKT)
+    hk_tz = pytz.timezone('Asia/Hong_Kong')
+    hk_time = datetime.now(hk_tz)
+
+    # Format date and time
+    formatted_time = hk_time.strftime("%Y-%m-%d %H:%M:%S %Z")
+    #print(formatted_time)  # Output: 2025-10-09 08:53:00 HKT
+
+    # Extract components
+    year = hk_time.year
+    month = hk_time.month
+    day = hk_time.day
+    hour = hk_time.hour
+    minute = hk_time.minute
+    second = hk_time.second
+    currentTime['year']=year
+    currentTime['month']=month
+    currentTime['day']=day
+    currentTime['hour']=hour
+    currentTime['minute']=minute
+    currentTime['second']=second
+    #print(f"Date: {year}-{month:02d}-{day:02d}, Time: {hour:02d}:{minute:02d}:{second:02d}")
+    return currentTime
 def directPasteAndSend(input:str):
     pyperclip.copy(input)
     time.sleep(1)
@@ -54,7 +79,7 @@ def sendAtPerfectMinutes():
     
 
 def openWhatsapp(hour,minute,targetGroup):
-    currentTime = getCurrentTime.getCurrentTime()
+    currentTime = getCurrentTime()
     second = currentTime['second']
     openTime = 60 - second
     
@@ -77,7 +102,7 @@ def openWhatsapp(hour,minute,targetGroup):
 
 
 def sendMessage(outputText,postListMessage,targetGroup):
-    currentTime = getCurrentTime.getCurrentTime()
+    currentTime = getCurrentTime()
 
     year = currentTime['year']
     month = currentTime['month']

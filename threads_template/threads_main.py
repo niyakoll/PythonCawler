@@ -9,10 +9,8 @@ import time
 import schedule
 import result_text_cleaning
 from datetime import datetime
-import getCurrentTime
 import math
-import os
-import filter 
+import os 
 import re
 #Get setting from manifest json file
 client = []
@@ -263,13 +261,7 @@ def search_one_keyword(keyword:str)->list:
                 print(f"{firstPostUrl}\nThis Post was published over {hour_range} hours!")
             else:
                 url_list.append(firstPostUrl)
-                #isExist = filter.checkIsUrlExist(firstPostUrl)
-                #if isExist["haveUrl"] == False:
-                    #url_list.append(firstPostUrl)
-                #elif isExist["haveUrl"] == True and (isExist["like_count"] != firstPostLike or isExist["direct_reply_count"] != firstPostReply):
-                    #url_list.append(firstPostUrl)
-                #else:
-                    #print(f"{firstPostUrl}\nThis Post was searched last time and have no change.")
+            
 
             for post in search_result["replies"]:
                 postUserName = post["username"]
@@ -286,13 +278,7 @@ def search_one_keyword(keyword:str)->list:
                 else:
                     url_list.append(postUrl)
 
-                    #isExist = filter.checkIsUrlExist(postUrl)
-                    #if isExist["haveUrl"] == False:
-                        #url_list.append(postUrl)
-                    #elif isExist["haveUrl"] == True and (isExist["like_count"] != postLike or isExist["direct_reply_count"] != postReply):
-                            #url_list.append(postUrl)
-                    #else:
-                        #print(f"{postUrl}\nThis Post was searched last time and have no change.")
+                    
 
                 
     except ValueError as e:

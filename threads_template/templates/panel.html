@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<title>Listening Tool (Threads) Panel</title>
+<link rel="stylesheet" href="/static/style.css">
+<script>
+/* --------------------------------------------------------------
+   Global config object – filled by /api/config
+   -------------------------------------------------------------- */
+let cfg = {};
+
+/* --------------------------------------------------------------
+   Load config from Flask API
+   -------------------------------------------------------------- */
+async function load() {
+    try {
+        const r = await fetch("/api/config");
+        cfg = await r.json();
+        render();
+    } catch (e) {
+        console.error("Failed to load config", e);
+    }
+}
+
+/* --------------------------------------------------------------
+   Render the client list + global fields
+   -------------------------------------------------------------- */
+function render() {
+    const list = document.getElementById("clientList");
+    list.innerHTML = "";                     // clear
+
+    cfg.client.forEach(name => {
+        const p = cfg.client_panel[name];    // panel data for this client
+        const div = document.createElement("div");
+        div.className = "client";
+
+        div.innerHTML = `
+            <div class="head">
+                <strong>${escapeHtml(name)}</strong>
+                <label>
+                    <input type="checkbox" ${p.run ? "checked" : ""} 
+                           onchange="toggleRun('${escapeJs(name)}', this.checked)">
+                    Run
+                </label>
+                <button onclick="openEditModal('${escapeJs(name)}')">Edit</button>
+                <button class="del" onclick="deleteClient('${escapeJs(name)}')">Delete</button>
+            </div>`;
+        list.appendChild(div);
+    });
+
+    // ----- Global settings -----
+    document.getElementById("hour_range").value = cfg.hour_range;
+    document.getElementById("interval").value   = cfg.interval;
+    document.getElementById("ai_model").value   = cfg.ai_model[0] || "";
+}
+
+/* --------------------------------------------------------------
+   Helpers – safe HTML/JS escaping
+   -------------------------------------------------------------- */
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, m=>`&#${m.charCodeAt(0)};`); }
+function escapeJs(s)  { return String(s).replace(/'/g, "\\'"); }
+
+/* --------------------------------------------------------------
+   Toggle run flag
+   -------------------------------------------------------------- */
+async function toggleRun(name, run) {
+    await fetch("/api/client", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({name, run})
+    });
+    load();   // refresh UI
+}
+
+/* --------------------------------------------------------------
+   Delete client
+   -------------------------------------------------------------- */
+async function deleteClient(name) {
+    if (!confirm(`Delete client "${name}"?`)) return;
+    await fetch(`/api/client/${encodeURIComponent(name)}`, {method: "DELETE"});
+    load();
+}
+
+/* --------------------------------------------------------------
+   Modal – Edit client (all fields)
+   -------------------------------------------------------------- */
+function openEditModal(name) {
+    const p = cfg.client_panel[name];
+    const modal = document.getElementById("editModal");
+    const form  = document.getElementById("editForm");
+
+    // pre-fill
+    document.getElementById("edit_name").value          = name;
+    document.getElementById("edit_run").checked         = p.run;
+    document.getElementById("edit_keyword").value       = p.keyword.join(", ");
+    document.getElementById("edit_interval").value      = p.message_interval;
+    document.getElementById("edit_wa_group").value      = p.target_whatsapp_group;
+    document.getElementById("edit_whapi_id").value      = p.whapi_group_id;
+    document.getElementById("edit_ai_prompt").value     = p.ai_prompt;
+
+    // show
+    modal.style.display = "flex";
+
+    // submit handler
+    form.onsubmit = async e => {
+        e.preventDefault();
+        const payload = {
+            name: name,
+            run: document.getElementById("edit_run").checked,
+            keyword: document.getElementById("edit_keyword").value,
+            message_interval: document.getElementById("edit_interval").value,
+            target_whatsapp_group: document.getElementById("edit_wa_group").value,
+            whapi_group_id: document.getElementById("edit_whapi_id").value,
+            ai_prompt: document.getElementById("edit_ai_prompt").value
+        };
+        await fetch("/api/client", {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify(payload)
+        });
+        modal.style.display = "none";
+        load();
+    };
+}
+
+/* --------------------------------------------------------------
+   Add new client
+   -------------------------------------------------------------- */
+async function addClient() {
+    const name = prompt("New client name:");
+    if (!name) return;
+    await fetch("/api/client", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({name})
+    });
+    load();
+}
+
+/* --------------------------------------------------------------
+   Save global settings
+   -------------------------------------------------------------- */
+async function saveGlobal() {
+    const payload = {
+        hour_range: document.getElementById("hour_range").value,
+        interval:   document.getElementById("interval").value,
+        ai_model:   [document.getElementById("ai_model").value]
+    };
+    await fetch("/api/global", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(payload)
+    });
+    alert("Global settings saved");
+}
+
+/* --------------------------------------------------------------
+   Close modal
+   -------------------------------------------------------------- */
+function closeModal() {
+    document.getElementById("editModal").style.display = "none";
+}
+
+/* --------------------------------------------------------------
+   Init
+   -------------------------------------------------------------- */
+window.onload = load;
+</script>
+</head>
+<body>
+<div class="container">
+  <h1>Listening Tool (Threads) Control Panel</h1>
+
+  <button class="add" onclick="addClient()">+ Add Client</button>
+
+  <div id="clientList"></div>
+  <!-- Modal – Edit client -->
+<div id="editModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">x</span>
+        <h2>Edit Client</h2>
+        <form id="editForm">
+            <input type="hidden" id="edit_name">
+            <label><input type="checkbox" id="edit_run"> Run</label><br><br>
+
+            <label>Keywords (comma-separated):<br>
+                <textarea id="edit_keyword" rows="3" style="width:100%"></textarea>
+            </label><br><br>
+
+            <label>Message interval (min):<br>
+                <input id="edit_interval" type="number" min="1" style="width:100%">
+            </label><br><br>
+
+            <label>Target WhatsApp group:<br>
+                <input id="edit_wa_group" style="width:100%">
+            </label><br><br>
+
+            <label>Whapi group ID:<br>
+                <input id="edit_whapi_id" style="width:100%">
+            </label><br><br>
+
+            <label>AI prompt (optional):<br>
+                <textarea id="edit_ai_prompt" rows="4" style="width:100%"></textarea>
+            </label><br><br>
+
+            <button type="submit">Save</button>
+            <button type="button" onclick="closeModal()">Cancel</button>
+        </form>
+    </div>
+</div>
+
+  <h2>Global Settings</h2>
+  <div class="global">
+    <label>Hour range: <input id="hour_range" type="number" min="1"></label>
+    <label>Interval (min): <input id="interval" type="number" min="1"></label>
+    <label>AI model: <input id="ai_model"></label>
+    <button onclick="saveGlobal()">Save Global</button>
+  </div>
+
+  <p class="note">All changes are saved immediately and will be read on the next scraper loop.</p>
+</div>
+</body>
+</html>
+

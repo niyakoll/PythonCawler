@@ -46,7 +46,7 @@ def callAI(resultText)->str:
     
 
 def ai_model_shift(inputText,number):
-    print(f"Using Ai model {ai_model[number]}")
+    #print(f"Using Ai model {ai_model[number]}")
     client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=ai_agent_api_key[0],

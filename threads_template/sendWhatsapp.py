@@ -1,8 +1,8 @@
-import pywhatkit as pwk
+#import pywhatkit as pwk
 import schedule
 import time
-import pyperclip
-import pyautogui
+#import pyperclip
+#import pyautogui
 import threading
 import result_text_cleaning
 from datetime import datetime
@@ -44,6 +44,7 @@ def getCurrentTime()->dict:
     currentTime['second']=second
     #print(f"Date: {year}-{month:02d}-{day:02d}, Time: {hour:02d}:{minute:02d}:{second:02d}")
     return currentTime
+"""
 def directPasteAndSend(input:str):
     pyperclip.copy(input)
     time.sleep(1)
@@ -91,15 +92,7 @@ def openWhatsapp(hour,minute,targetGroup):
         closeTime = 1
     print(f"now second is {second}, opentime is {openTime}, waiting time is {waitTime}, close time is {closeTime}")
     pwk.sendwhatmsg_to_group(targetGroup, " ",time_hour=hour, time_min=minute+1, wait_time=waitTime, tab_close=True, close_time=closeTime)
-    """
-    if second >= 50:
-        pwk.sendwhatmsg_to_group(targetGroup, " ",time_hour=hour, time_min=minute+1, wait_time=20, tab_close=True, close_time=85)
-    elif second <= 20:
-        pwk.sendwhatmsg_to_group(targetGroup, " ",time_hour=hour, time_min=minute+1, wait_time=45, tab_close=True, close_time=60)
-    else:
-        pwk.sendwhatmsg_to_group(targetGroup, " ",time_hour=hour, time_min=minute+1, wait_time=25, tab_close=True, close_time=80)
-    """
-
+    
 
 def sendMessage(outputText,postListMessage,targetGroup):
     currentTime = getCurrentTime()
@@ -119,8 +112,8 @@ def sendMessage(outputText,postListMessage,targetGroup):
     t2.start()
     t1.join()
     t2.join()
-    print(f"Date: {year}-{month:02d}-{day:02d}, Time: {hour:02d}:{minute:02d}:{second:02d} Successfully Send Whatsapp Message!")
-
+    #print(f"Date: {year}-{month:02d}-{day:02d}, Time: {hour:02d}:{minute:02d}:{second:02d} Successfully Send Whatsapp Message!")
+"""
 def whapi_sendMessage(message,whapi_group_id):
     
 

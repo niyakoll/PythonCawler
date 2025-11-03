@@ -85,7 +85,9 @@ def parse_thread(data: Dict,keyword:str,viewCount) -> Dict:
         
         #result["reply_count"] = int(result["reply_count"].split(" ")[0])
     result["keyword"] = keyword
-    result["url"] = f"https://www.threads.net/@{result['username']}/post/{result['code']}"
+    uName = result["username"]
+    cCode = result["code"]
+    result["url"] = f"https://www.threads.net/@{uName}/post/{cCode}"
     return result
 
 def hourDifferent(postTimeStamp)->int:
@@ -290,7 +292,8 @@ def search_one_keyword_all_comment(url_list:list,thread_keyword,tempStorge)->dic
     i = 1
     try:
         if url_list != []:
-            print(f"Keyword {thread_keyword} found {len(url_list)} Posts in recent {hour_range} hours.")
+            totalPosts = len(url_list)
+            print(f"Keyword {thread_keyword} found {totalPosts} Posts in recent {hour_range} hours.")
             for postUrl in url_list:
                 try:
                     print(f"Post{i} : {postUrl} start Listening... ")
@@ -332,9 +335,11 @@ def search_multiple_keyword(all_keyword_list:list,file_path,tempStorge)->dict:
         print(f"An unexpected error occurred: {e}")
     finally:
         writeJson(file_path,tempStorge,tempStorge)
-        print(f"All keywords Listening finished, total {len(tempStorge)} Post collected.")
+        totalPost = len(tempStorge)
+        print(f"All keywords Listening finished, total {totalPost} Post collected.")
         end = time.time()
-        print(f"Total time taken: {int((end - start)/60)} minutes")
+        timeTaken =int((end - start)/60)
+        print(f"Total time taken: {timeTaken} minutes")
         return tempStorge
 
 
@@ -343,7 +348,7 @@ def scan(keyword_list_main):
     print(f"{currentTime} : Start Working ...")
     print(f"{currentTime} : Distributing Keyword...")
     t = ThreadDistribue(keyword_list_main)
-    print(f"Total of {len(keyword_list_main)} keywords, each thread scans {len(t["t1"])} keywords...")
+    #print(f"Total of {len(keyword_list_main)} keywords, each thread scans {len(t["t1"])} keywords...")
     t1 = threading.Thread(target=search_multiple_keyword, args=(t["t1"],str(os.path.join(os.path.dirname(__file__),"result","searchResult1.json")),tempStorge1))
     t2 = threading.Thread(target=search_multiple_keyword, args=(t["t2"],str(os.path.join(os.path.dirname(__file__),"result","searchResult2.json")),tempStorge2))
     t3 = threading.Thread(target=search_multiple_keyword, args=(t["t3"],str(os.path.join(os.path.dirname(__file__),"result","searchResult3.json")),tempStorge3))

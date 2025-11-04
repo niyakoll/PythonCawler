@@ -1,239 +1,277 @@
-Listening Tool For Threads
+```markdown
+# Listening Tool For Threads
 
-This repository integrates a python scraping tool for threads and a simple web application panel by using flask. The following instruction will explain the function of each file and how to deploy in local, xampp and cloud environments.
+This repository integrates a **Python scraping tool for Threads** and a **simple web application panel** using **Flask**. The instructions below explain the function of each file and how to deploy it in **local**, **XAMPP**, and **cloud (AWS EC2)** environments.
 
-Prerequisite
+---
 
-This repository is a python base program, you should first make sure you have python installed.
+## Prerequisite
 
-Install python in window(bash)
+This is a **Python-based program**. Make sure you have **Python installed**.
 
+### Install Python on Windows (via installer)
+```bash
 .\python-3.11.0-amd64.exe /quiet InstallAllUsers=1 PrependPath=1 Include_test=0
+```
 
-verify
-python –version
+### Verify Installation
+```bash
+python --version
+```
 
-Content
+---
 
-1. Deploy at local 
+## Content
 
-2. Deploy at xampp
+1. [Deploy at Local](#deploy-at-local)  
+2. [Deploy at XAMPP](#deploy-at-xampp)  
+3. [Deploy at Cloud (AWS EC2)](#deploy-at-cloud-aws-ec2)  
+4. [Directory Explanation](#directory-explanation)  
+5. [External API Service Setup](#external-api-service-setup)
 
-3. Deploy at cloud (AWS EC2)
+---
 
-4. Directory Explanation
+## Deploy at Local
 
-5. External API service setup
-Deploy at Local
+### 1. Install Dependencies
+```bash
+cd ltc
+pip install -r requirements.txt
+```
 
-Install dependencies
-at bash(go to the ltc directory):
+> **Note**: Playwright browser installation is covered in the [XAMPP section](#deploy-at-xampp).
 
-pip install -r requirements.txt 
+---
 
-1. Manually configure manifest.json
+### 2. Manually Configure `manifest.json`
 
-Follow the format at the client_panel:
-*target_whatsapp_group can be empty
-*whapi_group_id can follow the following guide
+Follow the format under `client_panel`:
 
-"run" :
- set true to run this client
+| Field | Description |
+|------|-------------|
+| `target_whatsapp_group` | Can be empty |
+| `whapi_group_id` | See [Whapi guide](#whapi-setup) |
+| `run` | Set `true` to run this client |
+| `message_interval` | Interval (minutes) to **receive** messages: **only** `15, 30, 60, 120, 240, 360, 720, 1440` (others will crash) |
+| `whapi_group_id` | Group to send messages |
+| `ai_prompt` | Prompt for AI agent |
 
-"message_interval" : 
-interval (minutes)that the client will receive message(not the scrapping interval),only enter 15,30,60,120,240,360,720,1440, otherwise crash
+Also add the client name to the `client` key:
 
-"whapi_group_id" : 
-send to which group
+```json
+"client": ["Client A", "Client B"]
+```
 
-"ai_prompt" : 
-prompt for ai agent 
+---
 
+### 3. Configure Global Settings in `manifest.json`
 
-Also add client name to the client key:
+| Field | Description |
+|------|-------------|
+| `hour_range` | Time range (hours) for post age (e.g., drop posts older than 2 hours) |
+| `interval` | Scraping interval in **minutes** |
+| `ai_model` | Follow [OpenRouter guide](#ai-agent-setup) |
+| `whapi_token` | From [Whapi dashboard](#whapi-setup) |
+| `whapi_api_url` | Usually `https://gate.whapi.cloud/` |
 
-Add API key and configure the global setting:
+---
 
-"hour_range":
- set the time range(hours) of the threads post time(if a post is posted on two hours ago, program will drop the post to ensure only scrap the most recent post.)
+### 4. Ensure Correct File Hierarchy
 
-"interval":
-scraping interval(minutes), how much time to wait for second scanning
+```
+ltc/
+├── app.py
+├── manifest.json
+├── flow_control.py
+└── ...
+```
 
-"ai_model": 
-follow the guide
+---
 
-"whapi_token" and "whapi_api_url":
-follow the guide
-
-
-2. Make sure that all file are in the right Hierarchy
-
-3.At bash, go to the ltc directory
-
-cmd:
-
+### 5. Run the Scraper
+```bash
 python flow_control.py
+```
 
-Deploy at xampp
+---
 
-Download Xampp: https://www.apachefriends.org/
+## Deploy at XAMPP
 
-Put ltc directory into htdoc (explorer)
+### 1. Download XAMPP
+[https://www.apachefriends.org/](https://www.apachefriends.org/)
 
-Open XAMPP Shell and run:
+### 2. Place `ltc` Folder
+```
+C:\xampp\htdocs\ltc
+```
 
-cd C:\xampp\htdocs\ltc 
+### 3. Open **XAMPP Shell** and Run:
+```bash
+cd C:\xampp\htdocs\ltc
 python -m venv venv
-venv\Scripts\activate 
-pip install flask 
-pip install -r C:\xampp\htdocs\ltc\requirements.txt 
+venv\Scripts\activate
+pip install flask
+pip install -r C:\xampp\htdocs\ltc\requirements.txt
 playwright install --with-deps chromium
-verify if playwright browser installed correctly:
+```
 
+### 4. Verify Playwright
+```bash
 python testp.py
-
-expected output:
+```
+**Expected Output**:
+```
 SUCCESS → Playwright OK on XAMPP!
+```
 
-Open XAMPP Shell and run:
-bat
+---
+
+### 5. Create `run.bat` (Auto-start Script)
+```bat
 @echo off
 cd /d "C:\xampp\htdocs\ltc"
 call venv\Scripts\activate
 python app.py
 pause
+```
 
-Allow port 5000 in Windows Firewall
-Run as Admin:
-cmd
+Double-click `run.bat` to start the web panel.
+
+---
+
+### 6. Allow Port 5000 in Windows Firewall
+Run as **Admin**:
+```cmd
 netsh advfirewall firewall add rule name="Flask 5000" dir=in action=allow protocol=TCP localport=5000
+```
 
+---
 
-Find your PC’s local IP
-at local computer bash:
+### 7. Find Your Local IP
+```bash
 ipconfig
-look for your IPv4 address(something like 192.168.xx.xx)
+```
+Look for **IPv4 Address** (e.g., `192.168.1.100`)
 
+---
 
-Open from ANY device On phone / other PC, open browser: text
-http://<your ip address>:5000
-e.g. http://192.168.1.100:5000
+### 8. Access from Any Device (Same Network)
+Open browser on phone or another PC:
+```
+http://192.168.1.100:5000
+```
 
+> Only devices on the **same network** can access.
 
-*Only the device that connect with the same network can access your server
+---
 
+## Deploy at Cloud (AWS EC2)
 
-Deploy at Cloud(AWS EC2)
-Directory Explanation
+> See [AWS Deployment Guide](docs/AWS_DEPLOYMENT.md) for full steps (coming soon).
 
-This repository includes the following directory - ltc (short for “Listening Tool Control”)
+---
 
-Directory Hierarchy
+## Directory Explanation
 
--ltc
-	–static
-		–style.css
-–templates
-	–panel.html
-–result
-	–{client}outputRecord.json
-	–{client}AIOutput.txt
-	–{client}PostListOutput.txt
-	–finalOutput
-	–AllClientFinalOutput
-	–searchResult{1-10}.json
-–app.py
-–manifest.json
-	–flow_control.py
-	–threads_main.py
-	–result_text_cleaning.py
-–ai_agent.py
-–sendWhatsapp.py
-–testp.py
-–requirements.txt
+```
+ltc/
+├── static/
+│   └── style.css                 # Frontend styling
+├── templates/
+│   └── panel.html                # Main web UI
+├── result/
+│   ├── {client}outputRecord.json # Cleaned scraped data
+│   ├── {client}AIOutput.txt      # AI input debug
+│   ├── {client}PostListOutput.txt# Message output debug
+│   ├── finalOutput/              # Temp per-scrape output
+│   ├── AllClientFinalOutput/     # Combined final output
+│   └── searchResult{1-10}.json   # Raw scraped data
+├── app.py                        # Flask web panel
+├── manifest.json                 # Configuration (DO NOT commit API keys)
+├── flow_control.py               # Main scraper controller
+├── threads_main.py               # Scrapes Threads → searchResult*.json
+├── result_text_cleaning.py       # Cleans raw data → readable format
+├── ai_agent.py                   # Calls OpenRouter AI
+├── sendWhatsapp.py               # Sends message via Whapi
+├── testp.py                      # Playwright test
+└── requirements.txt              # Python dependencies
+```
 
-Main function brief of each file is shown in the following:
+---
 
-File name
-Function
-app.py
-Building Panel web application with flask
-control route function 
-actually run the panel web
-panel.html
-Core web structure by HTML for the panel
-including javascript to control render and button action
-style.css
-Style the front end of panel web application
+### File Functions Summary
+
+| File | Function |
+|------|---------|
+| `app.py` | Builds Flask panel, handles routes |
+| `panel.html` | Core HTML + JS for UI |
+| `style.css` | Styles the panel |
+| `manifest.json` | Config: clients, keywords, intervals, API keys |
+| `flow_control.py` | Orchestrates scraping, AI, WhatsApp |
+| `threads_main.py` | Scrapes Threads → raw JSON |
+| `result_text_cleaning.py` | Cleans raw data → readable format |
+| `ai_agent.py` | Sends data to OpenRouter AI |
+| `sendWhatsapp.py` | Sends final message via Whapi |
+| `requirements.txt` | All Python dependencies |
+
+> **Warning**: `{client}outputRecord.json` auto-deletes data older than **3 days**.
+
+---
+
+## External API Service Setup
+
+### AI Agent: [OpenRouter](https://openrouter.ai/)
+
+1. Create/Login account
+2. Go to **Account → Keys → Create API Key**
+3. Save key → paste in `manifest.json` → `ai_agent_api_key`
+4. Choose model → copy **Model ID**
+5. Paste in `manifest.json` → `ai_model`
+6. Edit `ai_prompt` in `client_panel` as needed
+
+---
+
+### Whapi: [https://panel.whapi.cloud](https://panel.whapi.cloud)
+
+1. Create/Login account
+2. Go to **Dashboard → Your Channel**
+3. Connect WhatsApp (scan QR)
+4. Copy **Channel Token** → `manifest.json` → `whapi_token`
+5. Copy **API URL** → `manifest.json` → `whapi_api_url` (usually `https://gate.whapi.cloud/`)
+
+---
+
+### Get Group ID: [Whapi Docs](https://whapi.readme.io/reference/getgroups)
+
+1. Use your token → click **"Get Groups"**
+2. Find target group → copy ID (e.g., `1203000029491703@g.us`)
+3. Paste in `manifest.json` → `client_panel` → `whapi_group_id`
+
+---
+
+## Security Note
+
+> **Never commit `manifest.json`** with API keys to public GitHub.
+
+Use `.gitignore`:
+```gitignore
 manifest.json
-Configure setting of the scraping program
+*.pem
+.env
+```
 
- include:
-client, keywordlist,message_interval,target_whatsapp_group…
+---
 
-scraping program read the manifest and run
+## Screenshots
 
-*manifest contains API key of ai agent and whapi(sendWhatsapp), do not push this file directly to public repository.
+![Panel UI](image1.png)
+![Edit Modal](image2.png)
+![Whapi Groups](image3.png)
 
+---
 
-flow_control.py
-Main control of the scraping program, run this program to start entire scraping process(including call ai agent and send message)
-threads_main.py
-scrap web data from threads and store to searchResult{1-10}.json, called by flow_control.py
-result_text_cleaning.py
-read searchResult{1-10}.json and clean the raw data to be readable. Store cleaned data to {client}outputRecord.json. 
-ai_agent.py
-input data and call openroute ai agent, output ai analysis text
-sendWhatsapp.py
-input message body and send to target group(group id provided by whapi:https://whapi.readme.io/reference/getgroups)
-requirements.txt
-dependencies used in python program
+## License
 
-in bash: 
-pip install -r requirements.txt
-to install all needed dependencies 
-*guideline of installing playwright browser is introduced in deployment part. 
-{client}outputRecord.json
-	
-cleaned data will store to this json, this json is client-base,each client owns one record. This file will delete outdated data(3 days ago) to prevent storage leak
-finalOutput
-this is a temporary storage of the final output of each scrap
-AllClientFinalOutput
-this is the final output that combine all client cleaned data from each scrap
-searchResult{1-10}.json
-this is the temporary storage to store scraping raw data
-{client}AIOutput.txt
-	
-this is for debug and testing, to observe the input text for ai agent
-{client}PostListOutput.txt
-This is for debugging and testing, to observe the output text for sending messages.
-
-
-External API service setup
-	
-AI agent : https://openrouter.ai/
-Function: call ai model to process and analysis scraped data
-1. Create Account/Login Account
-2. Navigate to Account/Key/Create API Key
-3. Enter a name of API key and save the key in a secure file
-4. Paste the Model ID to the manifest.json/ai_agent_api_key
-5. Navigate to Model and select a model that suit your need
-6. Copy the Model ID
-7. Paste the Model ID to the manifest.json/ai_model
-8. You can amend AI prompt by rewrite the manifest.json/client_panel/ai_prompt
-
-Whapi:https://panel.whapi.cloud/dashboard
-Function: use request to call whapi to send whatsapp message to the target group
-1. Create Account/Login Account
-2. Navigate to dashboard
-3. Navigate to your channel(register before, connect to your whatsapp account,scan QR code)
-4. Copy your channel token
-5. Paste channel token to the manifest.json/whapi_token
-6. Copy API URL and paste to the manifest.json/whapi_api_url
-
-Get Client group ID:https://whapi.readme.io/reference/getgroups
-1. Copy your channel token and click "get"
-2. Find your target group ID (something like : 1203000029491703@g.us)
-3. Copy group ID and paste it to the manifest.json/client_panel/whapi_group_id
-
+MIT
+```
+```

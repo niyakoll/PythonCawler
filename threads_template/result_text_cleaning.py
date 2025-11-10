@@ -120,7 +120,7 @@ def findClientKeywordList(clientName):
     return kList
 
 def formatText(resultFileName,clientName)->str:
-    cleanOldRecord(clientName=clientName,timeRange=172800) #clean old record older than 3 hours
+    cleanOldRecord(clientName=clientName,timeRange=90000) #clean old record older than 25 hours
     now = timestampConvert(time.time())
     print(f"{now} : Start Cleaning Data.")
     outputRecord = {}
@@ -326,13 +326,19 @@ def postList(resultFileName,clientName):
         print(e)
 
     return updatePostList
-
+def getGobalattrFromManifest(attr:str):
+    path = str(os.path.join(os.path.dirname(__file__),"manifest.json"))
+    with open(path, 'r',encoding="utf-8") as file:
+        manifest = json.load(file)
+        result = manifest[attr]
+    return result
 
 def prepareOutputText(clientName:str,client_message_interval:int)->str:
     cleanData = {}
     AiinputText = ""
     postListMessage = ""
     finalOutput= {}
+    
     
     try:
         with open(str(os.path.join(os.path.dirname(__file__),"result",f"{clientName}outputRecord.json")), 'r',encoding="utf-8") as file:
@@ -362,7 +368,19 @@ def prepareOutputText(clientName:str,client_message_interval:int)->str:
                 #viewCount= message["postViewCount"]
                 #900s means 10 minutes (60*15),if the post information did not updated in 15 minutes, skip it.
                 hrDifferent = threads_main.hourDifferent(postTimeStamp)
-                if hrDifferent > hour_range:
+                try:
+                    hour_range = getGobalattrFromManifest("hour_range")
+                    if client_message_interval != 15:
+                        range = 0
+                        client_message_interval_hour = int(client_message_interval/60)
+                        range = hour_range + client_message_interval_hour
+                        
+                    else:
+                        range = hour_range
+                except Exception as e:
+                    hour_range = 2
+                
+                if hrDifferent > range:
                     continue
                 if time.time() - updateTime > (client_message_interval * 60):
                     readableUpdateTime = timestampConvert(updateTime)

@@ -7,7 +7,9 @@ import threading
 import time
 import schedule
 import os
-
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 #Get setting from manifest json file
 client = []
 interval = 15
@@ -89,6 +91,12 @@ def OutputResult():
                 whapi_group_id = client_panel[client]["whapi_group_id"]
                 Distribute(client,target_whatsapp_group,whapi_group_id)
                 try:
+                    with open(str(os.path.join(os.path.dirname(__file__),"result",f"AllClientFinalOutput.json")), 'r',encoding="utf-8") as file:
+                        AllClientFinalOutput = json.load(file)
+                        
+                except Exception as e:
+                    print(e)
+                try:
                     with open(str(os.path.join(os.path.dirname(__file__),"result",f"finalOutput.json")), 'r',encoding="utf-8") as file:
                         clientFinalOutput = json.load(file)
                         AllClientFinalOutput[client] = clientFinalOutput
@@ -106,6 +114,7 @@ def OutputResult():
 #pack all process into one function for better management
 def packAllScanner():
     startTime = time.time()
+    clearSearchResultJson()
     startScanning()
     OutputResult()
     reportMessage()
@@ -120,7 +129,16 @@ def packAllScanner():
     counter += 1
     print(f"Program run count:{counter}")
     
-
+def clearSearchResultJson():
+    #better performance 
+    initalsearchResultJson = []
+    try:
+        for i in range(1,11):
+            with open(str(os.path.join(os.path.dirname(__file__),"result",f"searchResult{i}.json")), 'w',encoding="utf-8") as file:
+                json.dump(initalsearchResultJson, file, indent=4,ensure_ascii=False)  # indent for pretty-printing
+                print(f"Client threads search result json {i} cleared.")
+    except Exception as e:
+        print(e)
 def setupJsonFile():
     initalsearchResultJson = []
     initalclientRecordJson = {}
@@ -165,7 +183,7 @@ def sendAIandSendMessage(aiinput:str,recentPostList:str,clientName:str,whapi_gro
     if len(recentPostList) > 15:
         try:
             now = result_text_cleaning.timestampConvert(time.time())
-            aiText =ai_agent.callAI(aiinput)
+            aiText ="AI功能將在未來版本推出" #ai_agent.callAI(aiinput)
             sendWhatsapp.whapi_sendToClient(ai_message=aiText,postListMessage=recentPostList,whapi_group_id=whapi_group_id)
             
             #response  = sendWhatsapp.whapi_sendMessage(f"{clientName} 你好!\n{aiText}\n{recentPostList}",whapi_group_id)
@@ -265,7 +283,9 @@ def reportMessage():
                         print(f"Unknown message interval setting for {client}.")
     except Exception as e:
         print(e)
-                
+
+def run_in_thread(func):
+    threading.Thread(target=func, daemon=True).start()
 if __name__ == "__main__":
     try:
         counter = 0
@@ -273,9 +293,12 @@ if __name__ == "__main__":
         setupJsonFile()
             #directly run the whole program when click run 
         packAllScanner()
+        #reportMessage()
             #schedule the whole program run every {interval}(refer to manifest json setting) minutes.
-        schedule.every(interval).minutes.do(packAllScanner)
-        
+        schedule.every(interval).minutes.do(lambda: run_in_thread(packAllScanner))
+        #schedule.every(15).minutes.do(lambda: run_in_thread(reportMessage))
+        #schedule.every(interval).minutes.do(packAllScanner)
+        #schedule.every(interval).minutes.do(reportMessage)
         #schedule.every().minute.at(":00").do(packAllScanner)
         #schedule.every().minute.at(":15").do(packAllScanner)
         #schedule.every().minute.at(":30").do(packAllScanner)

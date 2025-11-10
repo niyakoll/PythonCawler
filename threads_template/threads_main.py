@@ -128,76 +128,88 @@ def htmlToViewCount(html:str):
     return viewCount
 def scrape_thread(url: str,thread_keyword) -> dict:
     """Scrape Threads post and replies from a given URL"""
-    
-    with sync_playwright() as pw:
-        # start Playwright browser
-        browser = pw.chromium.launch(headless=True)
-        context = browser.new_context(viewport={"width": 1920, "height": 1080})
-        
-        page = context.new_page()
-        cdp_session = context.new_cdp_session(page)
-        # Enable network domain
-        #cdp_session.send("Network.enable")
-        cdp_session.send("Network.clearBrowserCookies")
-        cdp_session.send("Network.setExtraHTTPHeaders", {"headers": extra_headers})
-        # Clear browser cache
-        cdp_session.send("Network.clearBrowserCache")
-        #page.set_extra_http_headers(extra_headers)
+    try:
+        with sync_playwright() as pw:
+            # start Playwright browser
+            browser = pw.chromium.launch(headless=True)
+            context = browser.new_context(viewport={"width": 1920, "height": 1080},ignore_https_errors=True)
+            
+            page = context.new_page()
+            cdp_session = context.new_cdp_session(page)
+            # Enable network domain
+            #cdp_session.send("Network.enable")
+            cdp_session.send("Network.clearBrowserCookies")
+            cdp_session.send("Network.setExtraHTTPHeaders", {"headers": extra_headers})
+            # Clear browser cache
+            cdp_session.send("Network.clearBrowserCache")
+            #page.set_extra_http_headers(extra_headers)
 
-        # go to url and wait for the page to load
-        page.goto(url)
-        viewCount = ""
-        #viewCount = htmlToViewCount(page.content())
-        # wait for page to finish loading
-        page.wait_for_selector("[data-pressable-container=true]")
-        # find all hidden datasets
-        selector = Selector(page.content())
-        hidden_datasets = selector.css('script[type="application/json"][data-sjs]::text').getall()
-        #print(f"Originally, there are total :{len(hidden_datasets)} hidden sets.")
-        
-        
-        #print(hidden_datasets)
-        # find datasets that contain threads data
-        for hidden_dataset in hidden_datasets:
-            # skip loading datasets that clearly don't contain threads data
-            if '"ScheduledServerJS"' not in hidden_dataset:
-                continue
-            #testHiddenSet1.append(hidden_dataset)
-            #print(f"After filting ScheduledServerJS(not include), there are total :{len(testHiddenSet1)} hidden sets.")
-            #if keyword not in hidden_dataset:
-                #continue
-            if "thread_items" not in hidden_dataset:
-                continue
-            #testHiddenSet2.append(hidden_dataset)
-            #print(f"After filting thread_items(not include), there are total :{len(testHiddenSet2)} hidden sets.")
-            data = json.loads(hidden_dataset)
-            
-            # datasets are heavily nested, use nested_lookup to find 
-            # the thread_items key for thread data
-            thread_items = nested_lookup("thread_items", data)
-            
-            #print(thread_items)
-            if not thread_items:
-                continue
-            if thread_keyword not in str(thread_items):
-                continue
-            testHiddenSet3.append(hidden_dataset)
-            #print(f"After json loads and nested lookup thread_items, there are total :{len(testHiddenSet3)} hidden sets.")
-
-            # use our jmespath parser to reduce the dataset to the most important fields
-            threads = [parse_thread(t,thread_keyword,viewCount) for thread in thread_items for t in thread]
+            # go to url and wait for the page to load
+            page.goto(url, timeout=30000)
+            viewCount = ""
+            #viewCount = htmlToViewCount(page.content())
+            # wait for page to finish loading
+            page.wait_for_selector("[data-pressable-container=true]")
+            # find all hidden datasets
+            selector = Selector(page.content())
+            hidden_datasets = selector.css('script[type="application/json"][data-sjs]::text').getall()
+            #print(f"Originally, there are total :{len(hidden_datasets)} hidden sets.")
             
             
-            return {
+            #print(hidden_datasets)
+            # find datasets that contain threads data
+            for hidden_dataset in hidden_datasets:
+                # skip loading datasets that clearly don't contain threads data
+                if '"ScheduledServerJS"' not in hidden_dataset:
+                    continue
+                #testHiddenSet1.append(hidden_dataset)
+                #print(f"After filting ScheduledServerJS(not include), there are total :{len(testHiddenSet1)} hidden sets.")
+                #if keyword not in hidden_dataset:
+                    #continue
+                if "thread_items" not in hidden_dataset:
+                    continue
+                #testHiddenSet2.append(hidden_dataset)
+                #print(f"After filting thread_items(not include), there are total :{len(testHiddenSet2)} hidden sets.")
+                data = json.loads(hidden_dataset)
                 
-                # the first parsed thread is the main post:
-                "thread": threads[0],
-                # other threads are replies:
-                "replies": threads[1:],
-            }
-        raise ValueError("could not find thread data in page")
-    page.close()
-    browser.close()
+                # datasets are heavily nested, use nested_lookup to find 
+                # the thread_items key for thread data
+                thread_items = nested_lookup("thread_items", data)
+                
+                #print(thread_items)
+                if not thread_items:
+                    continue
+                if thread_keyword not in str(thread_items):
+                    continue
+                #testHiddenSet3.append(hidden_dataset)
+                #print(f"After json loads and nested lookup thread_items, there are total :{len(testHiddenSet3)} hidden sets.")
+
+                # use our jmespath parser to reduce the dataset to the most important fields
+                threads = [parse_thread(t,thread_keyword,viewCount) for thread in thread_items for t in thread]
+                
+                
+                return {
+                    
+                    # the first parsed thread is the main post:
+                    "thread": threads[0],
+                    # other threads are replies:
+                    "replies": threads[1:],
+                }
+            raise ValueError("could not find thread data in page")
+    except Exception as e:
+        print(f"Error scraping {url}: {e}")
+        raise
+    finally:
+        # === GUARANTEED CLEANUP ===
+        try:
+            page.close()
+        except:
+            pass
+        try:
+            browser.close()
+        except:
+            pass
+    
 
 
     

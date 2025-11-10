@@ -35,7 +35,7 @@ def api_client():
     data = request.json
     cfg = load()
     name = data["name"].strip()
-
+    initalclientRecordJson = {}
     # create entry if new
     if name not in cfg["client_panel"]:
         cfg["client"].append(name)
@@ -47,6 +47,12 @@ def api_client():
             "whapi_group_id": "",
             "ai_prompt": cfg["ai_prompt"]
         }
+        try:
+            with open(str(os.path.join(os.path.dirname(__file__),"result",f"{name}outputRecord.json")), 'w',encoding="utf-8") as file:
+                json.dump(initalclientRecordJson, file, indent=4,ensure_ascii=False)  # indent for pretty-printing
+                print("Client threads record json initalised.")
+        except Exception as e:
+                print(e)
 
     panel = cfg["client_panel"][name]
     panel["run"]                = data.get("run", panel["run"])

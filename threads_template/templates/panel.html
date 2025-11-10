@@ -37,15 +37,17 @@ function render() {
 
         div.innerHTML = `
             <div class="head">
-                <strong>${escapeHtml(name)}</strong>
-                <label>
-                    <input type="checkbox" ${p.run ? "checked" : ""} 
-                           onchange="toggleRun('${escapeJs(name)}', this.checked)">
-                    Run
-                </label>
-                <button onclick="openEditModal('${escapeJs(name)}')">Edit</button>
-                <button class="del" onclick="deleteClient('${escapeJs(name)}')">Delete</button>
-            </div>`;
+        <div class="client-name"><strong>${escapeHtml(name)}</strong></div>
+
+        <div class="run-group">
+            <input type="checkbox" ${p.run ? "checked" : ""}
+                   onchange="toggleRun('${escapeJs(name)}', this.checked)">
+            <span>Run</span>
+        </div>
+
+        <button class="edit-btn" onclick="openEditModal('${escapeJs(name)}')">Edit</button>
+        <button class="del" onclick="deleteClient('${escapeJs(name)}')">Delete</button>
+    </div>`;
         list.appendChild(div);
     });
 
@@ -94,7 +96,8 @@ function openEditModal(name) {
     document.getElementById("edit_name").value          = name;
     document.getElementById("edit_run").checked         = p.run;
     document.getElementById("edit_keyword").value       = p.keyword.join(", ");
-    document.getElementById("edit_interval").value      = p.message_interval;
+    const intervalSelect = document.getElementById("edit_interval");
+    intervalSelect.value = p.message_interval;  // auto-selects correct option
     document.getElementById("edit_wa_group").value      = p.target_whatsapp_group;
     document.getElementById("edit_whapi_id").value      = p.whapi_group_id;
     document.getElementById("edit_ai_prompt").value     = p.ai_prompt;
@@ -188,8 +191,17 @@ window.onload = load;
                 <textarea id="edit_keyword" rows="3" style="width:100%"></textarea>
             </label><br><br>
 
-            <label>Message interval (min):<br>
-                <input id="edit_interval" type="number" min="1" style="width:100%">
+            <label>Message interval:<br>
+                <select id="edit_interval" style="width:100%; padding:12px; font-size:16px; height:48px;border-radius:4px; border:1px solid #ccc;">
+                    <option value="15">15 mins</option>
+                    <option value="30">30 mins</option>
+                    <option value="60">1 hr</option>
+                    <option value="120">2 hrs</option>
+                    <option value="240">4 hrs</option>
+                    <option value="360">6 hrs</option>
+                    <option value="720">12 hrs</option>
+                    <option value="1440">1 day</option>
+                </select>
             </label><br><br>
 
             <label>Target WhatsApp group:<br>

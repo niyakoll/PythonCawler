@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  panel:
+    build: .
+    image: chessmanithost02/listening_tool:latest
+    container_name: threads-panel
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./manifest.json:/app/manifest.json
+      - ./result:/app/result
+    restart: unless-stopped
+
+  scraper:
+    build: .
+    image: chessmanithost02/listening_tool:latest
+    container_name: threads-scraper
+    command: >
+      sh -c '
+        # Kill any old flow_control.py
+        pkill -f "flow_control.py" || true
+
+        # Loop forever: run, wait for crash, restart
+        while true; do
+          echo "[$(date)] Starting flow_control.py ..."
+          python flow_control.py
+          echo "[$(date)] flow_control.py exited (code $?).
+                   Restarting in 10s to avoid leak..."
+          sleep 10
+        done
+      '
+    volumes:
+      - ./manifest.json:/app/manifest.json
+      - ./result:/app/result
+    depends_on:
+      - panel
+    restart: unless-stopped

@@ -1,0 +1,48 @@
+icacls.exe Listening_tool.pem /reset
+icacls.exe your_key_name.pem /grant:r "%username%:(R)"
+icacls.exe Listening_tool.pem /inheritance:r
+
+If you prefer to do it from UI
+
+select .pem file -> right click -> properties
+Security > Advanced > Disable inheritance
+Remove all Users
+Add > Select a principal
+In "Enter the object name to select" type your Windows username > ok
+Give all permissions > ok > apply
+
+local bash:(cd to program directory)
+scp -i Listening_tool.pem cloud.zip ec2-user@13.212.164.42:/home/ec2-user/
+
+ssh -i Listening_tool.pem ec2-user@13.212.164.42
+
+sudo yum update -y
+
+sudo yum install -y python3 python3-pip git
+
+pip install --user -r /home/ec2-user/cloud/requirements.txt
+
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+
+source ~/.bashrc
+
+nvm install --lts
+
+# Activate your virtualenv first (if you use one)
+source ~/venv/bin/activate
+
+# Install ONLY the browsers (no OS deps) – we’ll add them manually
+playwright install
+
+# Install the required OS packages with yum
+
+
+Xampp:
+
+@echo off
+cd /d "C:\xampp\htdocs\lts"
+call venv\Scripts\activate
+python app.py
+python flow_control.py
+pause
+
